@@ -18,8 +18,6 @@
 
 void DisplayError(LPCTSTR lpszFunction);
 
-// This project is compiled using MSVC, contains Windows-specific API calls
-
 int _tmain(int argc, TCHAR *argv[])
 {
 	WIN32_FIND_DATA ffd;
@@ -29,8 +27,7 @@ int _tmain(int argc, TCHAR *argv[])
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	DWORD dwError = 0;
 
-	// If the file paths are not specified as a command-line argument,
-	// print usage.
+	// If the file paths are not specified as a command-line argument, print usage.
 	if (argc != 3)
 	{
 		_tprintf(_T("Usage: %s \"<1st file name>\" \"<1st file name>\"\n"), argv[0]);
@@ -74,12 +71,12 @@ int _tmain(int argc, TCHAR *argv[])
 		{
 			if ((ffd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) == false)
 			{
-				// Concatenate file path and name
+				// Concatenate file path and name.
 				StringCchCopy(szFileNameWithPath, MAX_PATH, argv[counter + 1]);
 				StringCchCat(szFileNameWithPath, MAX_PATH, _T("\\"));
 				StringCchCat(szFileNameWithPath, MAX_PATH, ffd.cFileName);
 				
-				// Create file
+				// Create file.
 				HANDLE hFile = CreateFile(szFileNameWithPath, 
 					GENERIC_READ,          
 					FILE_SHARE_READ,       
@@ -88,7 +85,7 @@ int _tmain(int argc, TCHAR *argv[])
 					FILE_ATTRIBUTE_NORMAL ,
 					NULL);                 
 
-				// Read file
+				// Read file.
 				DWORD dwFileSize;
 				DWORD dwBytesRead = 0;
 				LPOVERLAPPED ol = { 0 };
@@ -103,7 +100,7 @@ int _tmain(int argc, TCHAR *argv[])
 					return -1;
 				}
 
-				// Make file hash
+				// Make file hash.
 				uint64_t seed = 1;
 				uint64_t hashParts[2];
 				MurmurHash3_x64_128(data, (uint64_t)dwBytesRead, seed, hashParts);
@@ -111,7 +108,7 @@ int _tmain(int argc, TCHAR *argv[])
 				std::wstring hash = std::to_wstring(hashParts[0]);
 				hash += std::to_wstring(hashParts[1]);
 
-				// Put file name into dictionary
+				// Put file name into dictionary.
 				if (dictionaries[counter].find(hash) != dictionaries[counter].end())
 					dictionaries[counter][hash].push_back(ffd.cFileName);
 				else
@@ -134,7 +131,7 @@ int _tmain(int argc, TCHAR *argv[])
 		FindClose(hFind);
 	}
 
-	// Compare files - iterate through one dictionary and find matches in the other by comparing hashes, perform this for both dictionaries
+	// Compare files - iterate through one dictionary and find matches in the other by comparing hashes, perform this for both dictionaries.
 	for (int counter = 0; counter < 2; counter++)
 	{
 		_tprintf(_T("\nSearching for content matches of files in directory '%s'\n"), szDir[counter]);
@@ -176,8 +173,7 @@ int _tmain(int argc, TCHAR *argv[])
 
 void DisplayError(LPCTSTR lpszFunction)
 {
-	// Retrieve the system error message for the last-error code
-
+	// Retrieve the system error message for the last-error code.
 	LPVOID lpMsgBuf;
 	LPVOID lpDisplayBuf;
 	DWORD dw = GetLastError();
@@ -192,7 +188,7 @@ void DisplayError(LPCTSTR lpszFunction)
 		(LPTSTR)&lpMsgBuf,
 		0, NULL);
 
-	// Display the error message and clean up
+	// Display the error message and clean up.
 	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
 		(lstrlen((LPCTSTR)lpMsgBuf) + lstrlen(lpszFunction) + 40) * sizeof(TCHAR));
 
