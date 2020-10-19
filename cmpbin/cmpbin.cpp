@@ -27,10 +27,10 @@ int _tmain(int argc, TCHAR *argv[])
 	HANDLE hFind = INVALID_HANDLE_VALUE;
 	DWORD dwError = 0;
 
-	// If the file paths are not specified as a command-line argument, print usage.
+	// If the directory paths are not specified as a command-line argument, print usage.
 	if (argc != 3)
 	{
-		_tprintf(_T("Usage: %s \"<1st file name>\" \"<1st file name>\"\n"), argv[0]);
+		_tprintf(_T("Usage: %s \"<1st directory path>\" \"<2nd directory path>\"\n"), argv[0]);
 		return (-1);
 	}
 
