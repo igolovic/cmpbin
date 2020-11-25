@@ -15,15 +15,33 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="cmpbin.cpp">
+    <ClCompile Include="CmpbinApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="MurmurHash3.cpp">
+    <ClCompile Include="CmpbinFrame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CmpbinLibrary\Cmpbin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CmpbinLibrary\MurmurHash3.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MurmurHash3.h">
+    <ClInclude Include="CmpbinApp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmpbinFrame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmpbinLibrary\Cmpbin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CmpbinLibrary\MurmurHash3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ListDataItem.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
