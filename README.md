@@ -3,4 +3,5 @@ Cross-platform GUI application (x64 Windows binaries exist, Linux build is plann
 
 This project is compiled using MSVC with Unicode strings.     
       
-Windows binary:
+Screenshot while running on Windows:
+![screenshot](./screenshot.png?raw=true)
