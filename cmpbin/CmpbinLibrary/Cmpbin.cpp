@@ -1,7 +1,3 @@
-#ifndef UNICODE
-#define UNICODE
-#endif
-
 // wx includes must go before standard includes
 #include <wx/dir.h>
 #include <wx/log.h>
