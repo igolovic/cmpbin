@@ -10,7 +10,7 @@
 #include <unordered_set>
 
 #include "Cmpbin.h"
-#include "MurMurHash3.h"
+#include "MurmurHash3.h"
 
 int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vector<ListDataItem> &listDataItems)
 {
@@ -39,7 +39,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 				wxString filePath = files->Item(i);
 				if (filePath.empty() == false)
 				{
-					std::wstring filePathStr = filePath.ToStdWstring();
+					std::string filePathStr = filePath.ToStdString();
 					std::ifstream inputFile(filePathStr, std::ios::binary);
 					if (inputFile.fail())
 					{
