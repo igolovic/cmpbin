@@ -125,7 +125,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 	textOutput.Append(wxString(wxT("1st directory file(s)")).Pad(filenamePaddedLength - 21, ' ', true));
 	textOutput.Append(wxString(wxT("2nd directory file(s)")).Pad(filenamePaddedLength - 21, ' ', false));
 	textOutput.Append(wxT("\n"));
-	
+
 	for (auto listDataItem : listDataItems) // access by reference to avoid copying
 	{
 		textOutput.Append(wxString::Format(wxT("\n%s\n"), listDataItem.Hash));
