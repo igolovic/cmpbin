@@ -33,7 +33,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 		{
 			wxArrayString *files = new wxArrayString;
 
-			size_t s = dir.GetAllFiles(dirPath, files, wxEmptyString, wxDIR_FILES);
+			dir.GetAllFiles(dirPath, files, wxEmptyString, wxDIR_FILES);
 			for (int i = 0; i < files->Count(); i++)
 			{
 				wxString filePath = files->Item(i);
