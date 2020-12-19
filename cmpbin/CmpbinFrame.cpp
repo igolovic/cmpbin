@@ -11,14 +11,18 @@
 #include <wx/defs.h>
 #include <wx/clipbrd.h>
 #include <wx/utils.h>
+#include <wx/aboutdlg.h>
+#include <wx/icon.h>
 
 #include "CmpbinFrame.h"
 #include "CmpbinLibrary/Cmpbin.h"
+#include "Pics/cmpbin.xpm"
 
 CmpbinFrame::CmpbinFrame(const wxString &title)
-    : wxFrame(NULL, wxID_ANY, title)
+    : wxFrame(NULL, wxID_CmpbinFrame, title)
 {
 	InitializeUI();
+    this->SetIcon(cmpbin_xpm);
 }
 
 void CmpbinFrame::InitializeUI()
@@ -130,7 +134,7 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 			for (std::vector<ListDataItem>::iterator it = listDataItems.begin(); it != listDataItems.end(); ++it)
 			{
 				CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->Hash);
-				
+
 				if (it->FilesFromDirectory1.size() > 0)
 				{
 					auto files = it->FilesFromDirectory1;
@@ -183,8 +187,7 @@ void CmpbinFrame::BtnCopyComparisonTextToClipboardEvent(wxCommandEvent &event)
 		// Write some text to the clipboard
 		if (wxTheClipboard->Open())
 		{
-			// This data objects are held by the clipboard,
-			// so do not delete them in the app.
+			// This data objects are held by the clipboard, so do not delete them in the app.
 			wxTheClipboard->SetData(new wxTextDataObject(ComparisonText));
 			wxTheClipboard->Close();
 		}
@@ -199,18 +202,20 @@ void CmpbinFrame::BtnAboutEvent(wxCommandEvent &event)
 {
 	try
 	{
-		wxString data = wxT(
-			"Cmpbin - file binary content comparison program\n\n"
-			"Usage:\n"
-			"\t- select directories with files whose content should be compared\n"
-			"\t- click '" + CmpbinFrame::BtnRunComparison->GetLabelText() + "'\n"
-			"\t- comparison result can be viewed in user interface or copied to clipboard as text using '" + CmpbinFrame::BtnCopyComparisonTextToClipboard->GetLabelText() + "'\n\n"
-			"Version: 2.0.0.0\n"
-			"OS: %s\n"
-			"Architecture: %s\n\n"
-			"2020. Ivan Goloviæ - dedicated to my mom Vera :)");
-		
-		wxMessageBox(wxString::Format(data, wxPlatformInfo::Get().GetOperatingSystemIdName(), wxPlatformInfo::Get().GetArchName()), wxT("Cmpbin"));
+        wxAboutDialogInfo info;
+
+        info.SetName(wxT("Cmpbin - file binary content comparison program"));
+        info.SetVersion(wxT("2.0.0.0"));
+        info.SetWebSite(wxT("https://github.com/igolovic/cmpbin"), wxT("GIT repository"));
+        info.SetDescription(
+        wxT("Usage:\n"
+			"1) select directories with files to compare content\n"
+			"2) click '" + CmpbinFrame::BtnRunComparison->GetLabelText() + "'\n"
+			"3) view comparison result or copy it to clipboard using '" + CmpbinFrame::BtnCopyComparisonTextToClipboard->GetLabelText() + "'\n"
+        ));
+        info.SetCopyright(L"Copyright (c) 2020 Ivan GoloviÄ‡ - dedicated to my mom Vera :)");
+
+        wxAboutBox(info);
 	}
 	catch (...)
 	{

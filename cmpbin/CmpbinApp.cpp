@@ -13,8 +13,8 @@ bool CmpbinApp::OnInit()
 }
 
 BEGIN_EVENT_TABLE(CmpbinFrame, wxFrame)
-EVT_BUTTON(wxID_BtnRunComparison, CmpbinFrame::BtnRunComparisonEvent) 
-EVT_BUTTON(wxID_BtnSaveAsFile, CmpbinFrame::BtnCopyComparisonTextToClipboardEvent)
-EVT_BUTTON(wxID_BtnAbout, CmpbinFrame::BtnAboutEvent)
-EVT_BUTTON(wxID_BtnExit, CmpbinFrame::BtnExitEvent)
-END_EVENT_TABLE() 
+    EVT_BUTTON(wxID_BtnRunComparison, CmpbinFrame::BtnRunComparisonEvent)
+    EVT_BUTTON(wxID_BtnSaveAsFile, CmpbinFrame::BtnCopyComparisonTextToClipboardEvent)
+    EVT_BUTTON(wxID_BtnAbout, CmpbinFrame::BtnAboutEvent)
+    EVT_BUTTON(wxID_BtnExit, CmpbinFrame::BtnExitEvent)
+END_EVENT_TABLE()
