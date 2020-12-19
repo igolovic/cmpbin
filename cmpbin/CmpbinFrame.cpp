@@ -139,7 +139,7 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 				{
 					auto files = it->FilesFromDirectory1;
 					wxString filesStr;
-					for (std::vector<std::wstring>::iterator it = files.begin(); it != files.end(); ++it)
+					for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
 						filesStr = filesStr + *it + wxT(", ");
 
 					filesStr.RemoveLast(2);
@@ -150,7 +150,7 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 				{
 					auto files = it->FilesFromDirectory2;
 					wxString filesStr;
-					for (std::vector<std::wstring>::iterator it = files.begin(); it != files.end(); ++it)
+					for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
 						filesStr = filesStr + *it + wxT(", ");
 
 					filesStr.RemoveLast(2);
@@ -213,7 +213,7 @@ void CmpbinFrame::BtnAboutEvent(wxCommandEvent &event)
 			"2) click '" + CmpbinFrame::BtnRunComparison->GetLabelText() + "'\n"
 			"3) view comparison result or copy it to clipboard using '" + CmpbinFrame::BtnCopyComparisonTextToClipboard->GetLabelText() + "'\n"
         ));
-        info.SetCopyright(L"Copyright (c) 2020 Ivan Golović - dedicated to my mom Vera :)");
+        info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golović - dedicated to my mom Vera :)"));
 
         wxAboutBox(info);
 	}

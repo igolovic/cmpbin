@@ -7,9 +7,9 @@
 struct ListDataItem
 {
 public:
-	std::wstring Hash;
-	std::vector<std::wstring> FilesFromDirectory1;
-	std::vector<std::wstring> FilesFromDirectory2;
+	std::string Hash;
+	std::vector<std::string> FilesFromDirectory1;
+	std::vector<std::string> FilesFromDirectory2;
 
 	ListDataItem()
 	{
