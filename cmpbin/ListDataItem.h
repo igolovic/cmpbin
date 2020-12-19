@@ -1,3 +1,6 @@
+#ifndef _LISTDATAITEM_H_
+#define _LISTDATAITEM_H_
+
 #include <vector>
 #include <iostream>
 
@@ -11,11 +14,6 @@ public:
 	ListDataItem()
 	{
 	}
-
-	/*ListDataItem(std::wstring hash, std::vector<std::wstring> filesFromDirectory1, std::vector<std::wstring> filesFromDirectory2)
-	{
-		Hash = hash;
-		FilesFromDirectory1 = filesFromDirectory1;
-		FilesFromDirectory2 = filesFromDirectory2;
-	}*/
 };
+
+#endif
