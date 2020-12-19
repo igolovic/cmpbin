@@ -21,7 +21,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 	textOutput.Append(wxString::Format(wxT("2nd directory is '%s'\n\n"), dirPath2));
 
 	// Create dictionaries with hashes of file contents and file names
-	std::map<std::wstring, std::vector<std::wstring>> dictionaries[2];
+	std::map<std::string, std::vector<std::string>> dictionaries[2];
 	for (int counter = 0; counter < 2; counter++)
 	{
 		textOutput.Append(wxString::Format(wxT("Creating hashes for directory '%s'\n"), dirPaths[counter]));
@@ -47,7 +47,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 						return -1;
 					}
 					wxString fileName = wxFileNameFromPath(filePath);
-					std::wstring fileNameStr = fileName.ToStdWstring();
+					std::string fileNameStr = fileName.ToStdString();
 
 					// Resolve "most vexing parse" and read all byte content from file stream to vector
 					std::vector<char> data((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
@@ -58,15 +58,15 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 					uint64_t hashParts[2];
 					MurmurHash3_x64_128(&data[0], len, seed, hashParts);
 
-					std::wstring hash = std::to_wstring(hashParts[0]);
-					hash += std::to_wstring(hashParts[1]);
+					std::string hash = std::to_string(hashParts[0]);
+					hash += std::to_string(hashParts[1]);
 
 					// Put file name into dictionary.
 					if (dictionaries[counter].find(hash) != dictionaries[counter].end())
 						dictionaries[counter][hash].push_back(fileNameStr);
 					else
 					{
-						std::vector<std::wstring> filePaths = std::vector<std::wstring>();
+						std::vector<std::string> filePaths = std::vector<std::string>();
 						filePaths.push_back(fileNameStr);
 						dictionaries[counter].insert(std::make_pair(hash, filePaths));
 					}
@@ -79,12 +79,12 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 	}
 
 	// Compare hashes and associate file names
-	std::unordered_set<std::wstring> keysInDictionary1;
-	std::map<std::wstring, std::vector<std::wstring>>::iterator itDict;
+	std::unordered_set<std::string> keysInDictionary1;
+	std::map<std::string, std::vector<std::string>>::iterator itDict;
 	for (itDict = dictionaries[0].begin(); itDict != dictionaries[0].end(); itDict++)
 	{
 		ListDataItem listDataItem = ListDataItem();
-		std::wstring key = itDict->first;
+		std::string key = itDict->first;
 		listDataItem.Hash = key;
 
 		if (dictionaries[1].find(key) != dictionaries[1].end())
@@ -92,7 +92,7 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 			listDataItem.Hash = itDict->first;
 			listDataItem.FilesFromDirectory1 = itDict->second;
 
-			std::vector<std::wstring> matchedFiles = dictionaries[1][key];
+			std::vector<std::string> matchedFiles = dictionaries[1][key];
 			listDataItem.FilesFromDirectory2 = matchedFiles;
 			keysInDictionary1.insert(key);
 		}
