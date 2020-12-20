@@ -6,4 +6,4 @@ Architecture: all
 Essential: no
 Installed-Size: 1024
 Maintainer: github.com/igolovic/cmpbin
-Description: Compare if binary content of each files in two folders has match in other folder
+Description: Compare if binary content of each of the files from two folders has match in other folder

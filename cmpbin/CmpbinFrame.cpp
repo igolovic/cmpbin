@@ -204,16 +204,16 @@ void CmpbinFrame::BtnAboutEvent(wxCommandEvent &event)
 	{
         wxAboutDialogInfo info;
 
-        info.SetName(wxT("Cmpbin - file binary content comparison program"));
+        info.SetName(wxT("Cmpbin"));
         info.SetVersion(wxT("2.0.0.0"));
         info.SetWebSite(wxT("https://github.com/igolovic/cmpbin"), wxT("GIT repository"));
         info.SetDescription(
-        wxT("Usage:\n"
+        wxT("Compare if binary content of each of the files from two folders has match in other folder. Usage:\n"
 			"1) select directories with files to compare content\n"
 			"2) click '" + CmpbinFrame::BtnRunComparison->GetLabelText() + "'\n"
 			"3) view comparison result or copy it to clipboard using '" + CmpbinFrame::BtnCopyComparisonTextToClipboard->GetLabelText() + "'\n"
         ));
-        info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golović - dedicated to my mom Vera :)"));
+        info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golovic - dedicated to my mom Vera :)"));
 
         wxAboutBox(info);
 	}
