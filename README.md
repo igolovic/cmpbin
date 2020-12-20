@@ -7,6 +7,9 @@ Program uses wxWidgets libraries to perform cross-platform access to file system
 For hashing is used Murmur3 algorithm (https://github.com/aappleby/smhasher/blob/master/src/MurmurHash3.cpp).     
 
 Available Windows x64 binary was compiled using MSVC. Linux Debian build is planned.     
-      
-Screenshot while running on Windows:
+
+Screenshot while running on Debian Buster:
+![screenshot](./screenshot-debian.png?raw=true)
+
+Screenshot while running on Windows 10:
 ![screenshot](./screenshot.png?raw=true)
