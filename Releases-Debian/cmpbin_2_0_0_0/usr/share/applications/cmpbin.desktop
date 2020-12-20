@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Cmpbin
+Comment=Compare if binary content of each files in two folders has match in other folder
+Exec=cmpbin
+Icon=cmpbin.xpm
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Productivity;
+StartupNotify=true
