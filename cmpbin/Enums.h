@@ -11,7 +11,7 @@ enum
 	wxID_BtnAbout= wxID_HIGHEST + 6,
 	wxID_BtnExit = wxID_HIGHEST + 7,
 	wxID_CmpbinFrame = wxID_HIGHEST + 8,
-	wxID_AboutBoxFrame = wxID_HIGHEST + 9,
+	wxID_AboutBoxFrame = wxID_HIGHEST + 9
 };
 
 

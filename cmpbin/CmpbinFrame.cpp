@@ -1,6 +1,6 @@
-//#ifndef DEBUG
-//#define DEBUG
-//#endif
+#ifndef DEBUG
+#define DEBUG
+#endif
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -15,8 +15,17 @@
 #include <wx/icon.h>
 
 #include "CmpbinFrame.h"
-#include "CmpbinLibrary/Cmpbin.h"
+#include "WorkerThread.h"
 #include "Pics/cmpbin.xpm"
+
+BEGIN_EVENT_TABLE(CmpbinFrame, wxFrame)
+    EVT_BUTTON(wxID_BtnRunComparison, CmpbinFrame::BtnRunComparisonEvent)
+    EVT_BUTTON(wxID_BtnSaveAsFile, CmpbinFrame::BtnCopyComparisonTextToClipboardEvent)
+    EVT_BUTTON(wxID_BtnAbout, CmpbinFrame::BtnAboutEvent)
+    EVT_BUTTON(wxID_BtnExit, CmpbinFrame::BtnExitEvent)
+    EVT_COMMAND(wxID_ANY, wxEVT_STATUSEVENT, CmpbinFrame::WorkerThreadStatusEvent)
+    EVT_COMMAND(wxID_ANY, wxEVT_FINISHEDEVENT, CmpbinFrame::WorkerThreadFinishedEvent)
+END_EVENT_TABLE()
 
 CmpbinFrame::CmpbinFrame(const wxString &title)
     : wxFrame(NULL, wxID_CmpbinFrame, title)
@@ -27,6 +36,9 @@ CmpbinFrame::CmpbinFrame(const wxString &title)
 
 void CmpbinFrame::InitializeUI()
 {
+    this->CreateStatusBar();
+    this->SetStatusText("Select directories and run comparison");
+
 	// Create a top-level panel to hold all the contents of the frame
 	CmpbinFrame::MainPanel = new wxPanel(this, wxID_MainPanel);
 	wxBoxSizer *vbox = new wxBoxSizer(wxVERTICAL);
@@ -46,8 +58,10 @@ void CmpbinFrame::InitializeUI()
 		wxDefaultPosition, wxSize(350, wxDefaultCoord));
 
 #ifdef DEBUG
-	CmpbinFrame::DirPickerCtrl1->SetPath("C:\\cmp1");
-	CmpbinFrame::DirPickerCtrl2->SetPath("C:\\cmp2");
+//	CmpbinFrame::DirPickerCtrl1->SetPath("C:\\cmp1");
+//	CmpbinFrame::DirPickerCtrl2->SetPath("C:\\cmp2");
+	CmpbinFrame::DirPickerCtrl1->SetPath("/home/user/Documents/cmp1");
+	CmpbinFrame::DirPickerCtrl2->SetPath("/home/user/Documents/cmp2");
 #endif
 
 	gridSizer->Add(stDir1, 0, wxRIGHT, 8);
@@ -81,7 +95,7 @@ void CmpbinFrame::InitializeUI()
 	CmpbinFrame::BtnAbout = new wxButton(MainPanel, wxID_BtnAbout, wxT("About"));
 	hboxButtons->Add(CmpbinFrame::BtnAbout, 0, wxLEFT | wxBOTTOM, 5);
 
-	CmpbinFrame::BtnExit = new wxButton(MainPanel, wxID_BtnExit, _("Exit"));
+	CmpbinFrame::BtnExit = new wxButton(MainPanel, wxID_BtnExit, wxT("Exit"));
 	hboxButtons->Add(CmpbinFrame::BtnExit, 0, wxLEFT | wxBOTTOM, 5);
 
 	// Add rows to vertical sizer
@@ -123,54 +137,9 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 				return;
 			}
 
-		std::vector<ListDataItem> listDataItems = std::vector<ListDataItem>();
-		int result = Compare(dirPath1, dirPath2, ComparisonText, listDataItems);
-		if (result == 0)
-		{
-			CmpbinFrame::BtnCopyComparisonTextToClipboard->Enable();
-
-			// Show comparison result in listview
-			int rowIndex = 0;
-			for (std::vector<ListDataItem>::iterator it = listDataItems.begin(); it != listDataItems.end(); ++it)
-			{
-				CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->Hash);
-
-				if (it->FilesFromDirectory1.size() > 0)
-				{
-					auto files = it->FilesFromDirectory1;
-					wxString filesStr;
-					for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
-						filesStr = filesStr + *it + wxT(", ");
-
-					filesStr.RemoveLast(2);
-					CmpbinFrame::ListViewCmp->SetItem(rowIndex, 1, filesStr);
-				}
-
-				if (it->FilesFromDirectory2.size() > 0)
-				{
-					auto files = it->FilesFromDirectory2;
-					wxString filesStr;
-					for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
-						filesStr = filesStr + *it + wxT(", ");
-
-					filesStr.RemoveLast(2);
-					CmpbinFrame::ListViewCmp->SetItem(rowIndex, 2, filesStr);
-				}
-
-				rowIndex++;
-			}
-			CmpbinFrame::ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth()*0.2);
-			CmpbinFrame::ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth()*0.4);
-			CmpbinFrame::ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth()*0.4);
-		}
-		else
-		{
-			wxMessageBox(wxT("Comparison failed with code ") + wxString::Format("%d", result));
-			CmpbinFrame::BtnCopyComparisonTextToClipboard->Disable();
-		}
-
-		wxEndBusyCursor();
-		CmpbinFrame::MainPanel->Enable();
+        WorkerThread *worker = new WorkerThread(this, dirPath1, dirPath2);
+        worker->Create();
+        worker->Run();
 	}
 	catch(...)
 	{
@@ -178,6 +147,71 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 		CmpbinFrame::MainPanel->Enable();
 		wxEndBusyCursor();
 	}
+}
+
+void CmpbinFrame::WorkerThreadStatusEvent(wxCommandEvent& event)
+{
+    wxString message = event.GetString();
+    this->SetStatusText(message);
+}
+
+void CmpbinFrame::WorkerThreadFinishedEvent(wxCommandEvent& event)
+{
+    this->SetStatusText(wxT("Comparison ended."));
+
+    int status = event.GetInt();
+    if (status == 0)
+    {
+        wxString textOutput = event.GetString();
+        ComparisonText = textOutput;
+
+        CmpbinFrame::BtnCopyComparisonTextToClipboard->Enable();
+
+        void* pData = event.GetClientData();
+        std::vector<ListDataItem> *pListDataItems = reinterpret_cast<std::vector<ListDataItem>*>(pData);
+
+        // Show comparison result in listview
+        int rowIndex = 0;
+        for (std::vector<ListDataItem>::iterator it = pListDataItems->begin(); it != pListDataItems->end(); ++it)
+        {
+            CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->Hash);
+
+            if (it->FilesFromDirectory1.size() > 0)
+            {
+                auto files = it->FilesFromDirectory1;
+                wxString filesStr;
+                for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
+                    filesStr = filesStr + *it + wxT(", ");
+
+                filesStr.RemoveLast(2);
+                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 1, filesStr);
+            }
+
+            if (it->FilesFromDirectory2.size() > 0)
+            {
+                auto files = it->FilesFromDirectory2;
+                wxString filesStr;
+                for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
+                    filesStr = filesStr + *it + wxT(", ");
+
+                filesStr.RemoveLast(2);
+                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 2, filesStr);
+            }
+
+            rowIndex++;
+        }
+        CmpbinFrame::ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth()*0.2);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth()*0.4);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth()*0.4);
+    }
+    else
+    {
+        wxMessageBox(wxT("Comparison failed with code ") + wxString::Format("%d", status));
+        CmpbinFrame::BtnCopyComparisonTextToClipboard->Disable();
+    }
+
+    wxEndBusyCursor();
+    CmpbinFrame::MainPanel->Enable();
 }
 
 void CmpbinFrame::BtnCopyComparisonTextToClipboardEvent(wxCommandEvent &event)

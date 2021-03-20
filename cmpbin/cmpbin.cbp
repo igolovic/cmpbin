@@ -85,6 +85,8 @@
 		<Unit filename="CmpbinLibrary/MurmurHash3.h" />
 		<Unit filename="Enums.h" />
 		<Unit filename="ListDataItem.h" />
+		<Unit filename="WorkerThread.cpp" />
+		<Unit filename="WorkerThread.h" />
 		<Unit filename="pics/cmpbin.xpm" />
 		<Extensions />
 	</Project>
