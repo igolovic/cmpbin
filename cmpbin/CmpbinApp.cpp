@@ -1,20 +1,14 @@
 #include "CmpbinApp.h"
 #include "CmpbinFrame.h"
+#include "WorkerThread.h"
 
 wxIMPLEMENT_APP(CmpbinApp);
 
 bool CmpbinApp::OnInit()
 {
-	CmpbinFrame* frame = new CmpbinFrame("Cmpbin - compare binary content");
+	CmpbinFrame* frame = new CmpbinFrame(wxString::Format("Cmpbin %s - compare files in two folders by their binary content and find matches and unique files", APP_VERSION_STR));
 	frame->SetMinClientSize(wxSize(800, 600));
 	frame->Show(true);
 	frame->Maximize(true);
     return true;
 }
-
-BEGIN_EVENT_TABLE(CmpbinFrame, wxFrame)
-    EVT_BUTTON(wxID_BtnRunComparison, CmpbinFrame::BtnRunComparisonEvent)
-    EVT_BUTTON(wxID_BtnSaveAsFile, CmpbinFrame::BtnCopyComparisonTextToClipboardEvent)
-    EVT_BUTTON(wxID_BtnAbout, CmpbinFrame::BtnAboutEvent)
-    EVT_BUTTON(wxID_BtnExit, CmpbinFrame::BtnExitEvent)
-END_EVENT_TABLE()
