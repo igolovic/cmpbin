@@ -73,8 +73,6 @@
 			<Add option="-m64" />
 			<Add option="`wx-config --libs`" />
 		</Linker>
-		<Unit filename="AboutBoxFrame.cpp" />
-		<Unit filename="AboutBoxFrame.h" />
 		<Unit filename="CmpbinApp.cpp" />
 		<Unit filename="CmpbinApp.h" />
 		<Unit filename="CmpbinFrame.cpp" />

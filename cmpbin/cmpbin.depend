@@ -2621,7 +2621,7 @@
 
 1615676089 /usr/local/include/wx-3.1/wx/gtk/frame.h
 
-1616200787 /home/user/cmpbin/cmpbin/Enums.h
+1616281119 /home/user/cmpbin/cmpbin/Enums.h
 
 1616023378 source:/home/user/cmpbin/cmpbin/CmpbinApp.cpp
 	"CmpbinApp.h"
@@ -2631,12 +2631,14 @@
 1616018714 /home/user/cmpbin/cmpbin/CmpbinApp.h
 	<wx/app.h>
 
-1616198144 /home/user/cmpbin/cmpbin/CmpbinFrame.h
+1616289730 /home/user/cmpbin/cmpbin/CmpbinFrame.h
 	<wx/frame.h>
 	<wx/filepicker.h>
 	<wx/listctrl.h>
 	<wx/stattext.h>
+	"ListDataItem.h"
 	"Enums.h"
+	"WorkerThread.h"
 
 1615676089 /usr/local/include/wx-3.1/wx/filepicker.h
 	"wx/defs.h"
@@ -2880,7 +2882,7 @@
 
 1615676089 /usr/local/include/wx-3.1/wx/gtk/dirdlg.h
 
-1616200834 source:/home/user/cmpbin/cmpbin/CmpbinFrame.cpp
+1616289730 source:/home/user/cmpbin/cmpbin/CmpbinFrame.cpp
 	<wx/panel.h>
 	<wx/sizer.h>
 	<wx/stattext.h>
@@ -2981,17 +2983,18 @@
 1615676089 /usr/local/include/wx-3.1/wx/gtk/clipbrd.h
 	"wx/weakref.h"
 
-1616200949 /home/user/cmpbin/cmpbin/CmpbinLibrary/Cmpbin.h
+1616290401 /home/user/cmpbin/cmpbin/CmpbinLibrary/Cmpbin.h
 	<wx/event.h>
 	"../ListDataItem.h"
+	"../CmpbinFrame.h"
 
 1615676915 /home/user/cmpbin/cmpbin/ListDataItem.h
 	<vector>
 	<iostream>
 
-1615676915 /home/user/cmpbin/cmpbin/Pics/cmpbin.xpm
+1616281232 /home/user/cmpbin/cmpbin/Pics/cmpbin.xpm
 
-1616201065 source:/home/user/cmpbin/cmpbin/CmpbinLibrary/Cmpbin.cpp
+1616333002 source:/home/user/cmpbin/cmpbin/CmpbinLibrary/Cmpbin.cpp
 	<wx/dir.h>
 	<wx/log.h>
 	<wx/string.h>
@@ -3004,6 +3007,7 @@
 	"Cmpbin.h"
 	"MurmurHash3.h"
 	"../WorkerThread.h"
+	"../CmpbinFrame.h"
 
 1615676088 /usr/local/include/wx-3.1/wx/dir.h
 	"wx/longlong.h"
@@ -3017,13 +3021,15 @@
 	"MurmurHash3.h"
 	<stdlib.h>
 
-1616201210 source:/home/user/cmpbin/cmpbin/WorkerThread.cpp
+1616289851 source:/home/user/cmpbin/cmpbin/WorkerThread.cpp
 	<ctime>
 	"WorkerThread.h"
 	"CmpbinLibrary/Cmpbin.h"
+	"CmpbinFrame.h"
 
-1616201081 /home/user/cmpbin/cmpbin/WorkerThread.h
+1616288287 /home/user/cmpbin/cmpbin/WorkerThread.h
 	<wx/thread.h>
 	<wx/event.h>
 	"ListDataItem.h"
+	"CmpbinFrame.h"
 

@@ -2,11 +2,12 @@
 
 #include "WorkerThread.h"
 #include "CmpbinLibrary/Cmpbin.h"
+#include "CmpbinFrame.h"
 
 DEFINE_EVENT_TYPE(wxEVT_STATUSEVENT)
 DEFINE_EVENT_TYPE(wxEVT_FINISHEDEVENT)
 
-WorkerThread::WorkerThread(wxEvtHandler* pParent, wxString dirPath1, wxString dirPath2)
+WorkerThread::WorkerThread(CmpbinFrame* pParent, wxString dirPath1, wxString dirPath2)
     : wxThread(wxTHREAD_DETACHED), PParent(pParent)
 {
     PParent = pParent;
@@ -14,17 +15,25 @@ WorkerThread::WorkerThread(wxEvtHandler* pParent, wxString dirPath1, wxString di
     DirPath2 = dirPath2;
 }
 
-void Status(wxEvtHandler* pParent, wxCommandEvent evt, wxString message)
+void Status(CmpbinFrame* pParent, wxCommandEvent evt, wxString message)
 {
     evt.SetString(message);
     wxPostEvent(pParent, evt);
 }
 
-void Finished(wxEvtHandler* pParent, wxCommandEvent evt, int, wxString textOutput, std::vector<ListDataItem> *pLlistDataItems)
+void Finished(CmpbinFrame* pParent, wxCommandEvent evt, int, wxString textOutput, std::vector<ListDataItem> *pLlistDataItems)
 {
     evt.SetString(textOutput);
     evt.SetClientData(reinterpret_cast<void*>(pLlistDataItems));
     wxPostEvent(pParent, evt);
+}
+
+bool IsCancelled(CmpbinFrame* pParent, wxCommandEvent evt)
+{
+    if(pParent->pWorkerThread->TestDestroy())
+        return true;
+
+    return false;
 }
 
 void* WorkerThread::Entry()
@@ -32,13 +41,15 @@ void* WorkerThread::Entry()
     wxCommandEvent StatusEvent(wxEVT_STATUSEVENT, GetId());
     wxCommandEvent FinishedEvent(wxEVT_FINISHEDEVENT, GetId());
 
-    Compare(DirPath1, DirPath2, PParent, StatusEvent, FinishedEvent, &Status, &Finished);
+    Compare(DirPath1, DirPath2, PParent, StatusEvent, FinishedEvent, &Status, &Finished, &IsCancelled);
 
     return 0;
 }
 
-//enum EventId
-//{
-//    StatusEvent = 0,
-//    FinishedEvent = 1
-//}
+WorkerThread::~WorkerThread()
+{
+    wxCriticalSectionLocker enter(PParent->pWorkerThreadCS);
+
+    // Prevention of "dangling pointer"
+    PParent->pWorkerThread = NULL;
+}

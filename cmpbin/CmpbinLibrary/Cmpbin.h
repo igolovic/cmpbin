@@ -1,14 +1,17 @@
 #include <wx/event.h>
 
 #include "../ListDataItem.h"
+#include "../CmpbinFrame.h"
 
 void Compare(
     wxString dirPath1,
     wxString dirPath2,
-    wxEvtHandler* pParent,
+    CmpbinFrame* pParent,
     wxCommandEvent statusEvent,
     wxCommandEvent finishedEvent,
-    void (*status)(wxEvtHandler*, wxCommandEvent, wxString),
-    void (*finished)(wxEvtHandler*, wxCommandEvent, int, wxString, std::vector<ListDataItem>*)
+    void (*status)(CmpbinFrame*, wxCommandEvent, wxString),
+    void (*finished)(CmpbinFrame*, wxCommandEvent, int, wxString, std::vector<ListDataItem>*),
+    bool (*isCancelled)(CmpbinFrame*, wxCommandEvent)
     );
-//, wxString &textOutput, std::vector<ListDataItem> &listDataItems
+
+void FreeResources(std::vector<ListDataItem> *pListDataItems);
