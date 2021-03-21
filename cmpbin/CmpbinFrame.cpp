@@ -248,8 +248,8 @@ void CmpbinFrame::BtnAboutEvent(wxCommandEvent &event)
         info.SetName(wxT("Cmpbin"));
         info.SetVersion(wxT("2.0.0.0"));
         info.SetWebSite(wxT("https://github.com/igolovic/cmpbin"), wxT("GIT repository"));
-        info.SetDescription(wxT("Compare files in two folders by their binary content and shows matches and unique files in folders"));
-        info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golovic - dedicated to my mom Vera :)"));
+        info.SetDescription(wxT("Ivan Golovic - dedicated to my mom Vera :)"));
+        info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golovic"));
         info.SetIcon(cmpbin_xpm);
 
         wxAboutBox(info);
@@ -324,4 +324,10 @@ void CmpbinFrame::Disable()
     CmpbinFrame::BtnCopyComparisonTextToClipboard->Disable();
     CmpbinFrame::BtnAbout->Disable();
     CmpbinFrame::ListViewCmp->Disable();
+}
+
+CmpbinFrame::~CmpbinFrame()
+{
+    delete PPListDataItems;
+    PPListDataItems = nullptr;
 }

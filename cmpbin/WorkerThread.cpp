@@ -51,5 +51,5 @@ WorkerThread::~WorkerThread()
     wxCriticalSectionLocker enter(PParent->pWorkerThreadCS);
 
     // Prevention of "dangling pointer"
-    PParent->pWorkerThread = NULL;
+    PParent->pWorkerThread = nullptr;
 }

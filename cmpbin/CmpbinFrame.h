@@ -15,7 +15,7 @@ class CmpbinFrame : public wxFrame
 {
 public:
     CmpbinFrame(const wxString &title);
-    virtual ~CmpbinFrame(){};
+    ~CmpbinFrame();
 	void InitializeUI();
 	void Enable();
 	void Disable();
