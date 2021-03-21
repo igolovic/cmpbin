@@ -2623,12 +2623,12 @@
 
 1616281119 /home/user/cmpbin/cmpbin/Enums.h
 
-1616023378 source:/home/user/cmpbin/cmpbin/CmpbinApp.cpp
+1616335624 source:/home/user/cmpbin/cmpbin/CmpbinApp.cpp
 	"CmpbinApp.h"
 	"CmpbinFrame.h"
 	"WorkerThread.h"
 
-1616018714 /home/user/cmpbin/cmpbin/CmpbinApp.h
+1616335577 /home/user/cmpbin/cmpbin/CmpbinApp.h
 	<wx/app.h>
 
 1616334082 /home/user/cmpbin/cmpbin/CmpbinFrame.h
@@ -2882,7 +2882,7 @@
 
 1615676089 /usr/local/include/wx-3.1/wx/gtk/dirdlg.h
 
-1616334523 source:/home/user/cmpbin/cmpbin/CmpbinFrame.cpp
+1616335563 source:/home/user/cmpbin/cmpbin/CmpbinFrame.cpp
 	<wx/panel.h>
 	<wx/sizer.h>
 	<wx/stattext.h>
@@ -2895,6 +2895,7 @@
 	<wx/aboutdlg.h>
 	<wx/icon.h>
 	"CmpbinFrame.h"
+	"CmpbinApp.h"
 	"WorkerThread.h"
 	"Pics/cmpbin.xpm"
 

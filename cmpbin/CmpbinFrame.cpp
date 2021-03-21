@@ -15,6 +15,7 @@
 #include <wx/icon.h>
 
 #include "CmpbinFrame.h"
+#include "CmpbinApp.h"
 #include "WorkerThread.h"
 #include "Pics/cmpbin.xpm"
 
@@ -246,7 +247,7 @@ void CmpbinFrame::BtnAboutEvent(wxCommandEvent &event)
         wxAboutDialogInfo info;
 
         info.SetName(wxT("Cmpbin"));
-        info.SetVersion(wxT("2.0.0.0"));
+        info.SetVersion(APP_VERSION_STR);
         info.SetWebSite(wxT("https://github.com/igolovic/cmpbin"), wxT("GIT repository"));
         info.SetDescription(wxT("Ivan Golovic - dedicated to my mom Vera :)"));
         info.SetCopyright(wxT("Copyright (c) 2020 Ivan Golovic"));
