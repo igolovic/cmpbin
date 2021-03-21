@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Name=Cmpbin
-Comment=Compare if binary content of each of the files from two folders has match in other folder
+Comment=Compare files in two folders by their binary content and find matches and unique files
 Exec=cmpbin
 Icon=cmpbin.xpm
 Terminal=false

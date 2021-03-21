@@ -7,11 +7,10 @@ enum
 	wxID_DirPicker1Id = wxID_HIGHEST + 2,
 	wxID_DirPicker2Id = wxID_HIGHEST + 3,
 	wxID_BtnSaveAsFile = wxID_HIGHEST + 4,
-	wxID_MainPanel = 5,
-	wxID_BtnAbout= wxID_HIGHEST + 6,
+	wxID_MainPanel = wxID_HIGHEST + 5,
+	wxID_BtnAbout = wxID_HIGHEST + 6,
 	wxID_BtnExit = wxID_HIGHEST + 7,
-	wxID_CmpbinFrame = wxID_HIGHEST + 8,
-	wxID_AboutBoxFrame = wxID_HIGHEST + 9,
+	wxID_CmpbinFrame = wxID_HIGHEST + 8
 };
 
 

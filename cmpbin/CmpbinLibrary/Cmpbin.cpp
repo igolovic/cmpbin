@@ -7,14 +7,30 @@
 #include <map>
 #include <regex>
 #include <fstream>
+#include <string>
 #include <unordered_set>
 
 #include "Cmpbin.h"
 #include "MurmurHash3.h"
+#include "../WorkerThread.h"
+#include "../CmpbinFrame.h"
 
-int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vector<ListDataItem> &listDataItems)
+void Compare(
+    wxString dirPath1,
+    wxString dirPath2,
+    CmpbinFrame* pParent,
+    wxCommandEvent statusEvent,
+    wxCommandEvent finishedEvent,
+    void (*status)(CmpbinFrame*, wxCommandEvent, wxString),
+    void (*finished)(CmpbinFrame*, wxCommandEvent, int, wxString, std::vector<ListDataItem>*),
+    bool (*isCancelled)(CmpbinFrame*, wxCommandEvent)
+    )
 {
 	const wxString dirPaths[2] = { dirPath1 , dirPath2 };
+    wxString textOutput;
+    std::vector<ListDataItem> *pListDataItems = new std::vector<ListDataItem>();
+
+    status(pParent, statusEvent, wxT("Starting comparison..."));
 
 	textOutput.Append("Running comparison...\n");
 	textOutput.Append(wxString::Format(wxT("\n1st directory is '%s'\n"), dirPath1));
@@ -34,8 +50,15 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 			wxArrayString *files = new wxArrayString;
 
 			dir.GetAllFiles(dirPath, files, wxEmptyString, wxDIR_FILES);
-			for (int i = 0; i < files->Count(); i++)
+			for (size_t i = 0; i < files->Count(); i++)
 			{
+                if (isCancelled(pParent, statusEvent))
+                {
+                    FreeResources(pListDataItems);
+                    return;
+                }
+                status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %i of %i"), dirPath, i + 1, files->Count()));
+
 				wxString filePath = files->Item(i);
 				if (filePath.empty() == false)
 				{
@@ -44,7 +67,8 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 					if (inputFile.fail())
 					{
 						textOutput.Append(wxString::Format(wxT("Invalid stream for: '%s'\nExiting\n"), filePath));
-						return -1;
+						finished(pParent, finishedEvent, -1, textOutput, pListDataItems);
+						return;
 					}
 					wxString fileName = wxFileNameFromPath(filePath);
 					std::string fileNameStr = fileName.ToStdString();
@@ -78,11 +102,20 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 		}
 	}
 
+	status(pParent, statusEvent, wxT("Detecting files unique for directory 1 and file matches..."));
+
 	// Compare hashes and associate file names
+	int matchCount = 0, directory1UniqueCount = 0, directory2UniqueCount = 0;
 	std::unordered_set<std::string> keysInDictionary1;
 	std::map<std::string, std::vector<std::string>>::iterator itDict;
 	for (itDict = dictionaries[0].begin(); itDict != dictionaries[0].end(); itDict++)
 	{
+        if (isCancelled(pParent, statusEvent))
+        {
+            FreeResources(pListDataItems);
+            return;
+        }
+
 		ListDataItem listDataItem = ListDataItem();
 		std::string key = itDict->first;
 		listDataItem.Hash = key;
@@ -95,28 +128,44 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 			std::vector<std::string> matchedFiles = dictionaries[1][key];
 			listDataItem.FilesFromDirectory2 = matchedFiles;
 			keysInDictionary1.insert(key);
+
+			matchCount++;
 		}
 		else
 		{
 			listDataItem.FilesFromDirectory1 = itDict->second;
 			keysInDictionary1.insert(key);
+
+            directory1UniqueCount++;
 		}
-		listDataItems.push_back(listDataItem);
+		pListDataItems->push_back(listDataItem);
 	}
+
+    status(pParent, statusEvent, wxT("Detecting files unique for directory 2..."));
 
 	for (itDict = dictionaries[1].begin(); itDict != dictionaries[1].end(); itDict++)
 	{
+        if (isCancelled(pParent, statusEvent))
+        {
+            FreeResources(pListDataItems);
+            return;
+        }
+
 		if (keysInDictionary1.find(itDict->first) == keysInDictionary1.end())
 		{
 			ListDataItem listDataItem = ListDataItem();
 			listDataItem.Hash = itDict->first;
 			listDataItem.FilesFromDirectory2 = itDict->second;
 
-			listDataItems.push_back(listDataItem);
+			directory2UniqueCount++;
+
+			pListDataItems->push_back(listDataItem);
 		}
 	}
 
-	textOutput.Append(wxT("\nFiles comparisons using generated hashes:\n"));
+	status(pParent, statusEvent, wxT("Creating clipboard text..."));
+
+	textOutput.Append(wxT("\nFile comparisons using generated hashes:\n"));
 
 	constexpr int filenamePaddedLength = 64;
 	wxString blank = L" ";
@@ -126,8 +175,14 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 	textOutput.Append(wxString(wxT("2nd directory file(s)")).Pad(filenamePaddedLength - 21, ' ', false));
 	textOutput.Append(wxT("\n"));
 
-	for (auto listDataItem : listDataItems) // access by reference to avoid copying
+	for (auto listDataItem : *pListDataItems) // access by reference to avoid copying
 	{
+        if (isCancelled(pParent, statusEvent))
+        {
+            FreeResources(pListDataItems);
+            return;
+        }
+
 		textOutput.Append(wxString::Format(wxT("\n%s\n"), listDataItem.Hash));
 
 		// Build text descriptions
@@ -165,5 +220,12 @@ int Compare(wxString dirPath1, wxString dirPath2, wxString &textOutput, std::vec
 		}
 	}
 
-	return 0;
+    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %i, unique files in directory 1: %i, unique files in directory 2: %i", matchCount, directory1UniqueCount, directory2UniqueCount));
+    finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
+}
+
+void FreeResources(std::vector<ListDataItem> *pListDataItems)
+{
+    delete pListDataItems;
+    pListDataItems = NULL;
 }
