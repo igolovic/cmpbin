@@ -1,5 +1,3 @@
-#include <ctime>
-
 #include "WorkerThread.h"
 #include "CmpbinLibrary/Cmpbin.h"
 #include "CmpbinFrame.h"

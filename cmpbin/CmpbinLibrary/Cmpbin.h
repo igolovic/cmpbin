@@ -1,4 +1,5 @@
-#include <wx/event.h>
+#ifndef CMPBINLIBRARY_H_
+#define CMPBINLIBRARY_H_
 
 #include "../ListDataItem.h"
 #include "../CmpbinFrame.h"
@@ -15,3 +16,5 @@ void Compare(
     );
 
 void FreeResources(std::vector<ListDataItem> *pListDataItems);
+
+#endif

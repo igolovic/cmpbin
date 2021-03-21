@@ -1,6 +1,6 @@
-#ifndef DEBUG
-#define DEBUG
-#endif
+//#ifndef DEBUG
+//#define DEBUG
+//#endif
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
