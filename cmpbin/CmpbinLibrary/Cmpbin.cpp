@@ -57,7 +57,7 @@ void Compare(
                     FreeResources(pListDataItems);
                     return;
                 }
-                status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %i of %i"), dirPath, i + 1, files->Count()));
+                status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
 
 				wxString filePath = files->Item(i);
 				if (filePath.empty() == false)
@@ -220,7 +220,7 @@ void Compare(
 		}
 	}
 
-    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %i, unique files in directory 1: %i, unique files in directory 2: %i", matchCount, directory1UniqueCount, directory2UniqueCount));
+    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %d, unique files in directory 1: %d, unique files in directory 2: %d", matchCount, directory1UniqueCount, directory2UniqueCount));
     finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
 }
 

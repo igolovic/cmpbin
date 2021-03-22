@@ -166,6 +166,7 @@
     <ClCompile Include="CmpbinApp.cpp" />
     <ClCompile Include="CmpbinFrame.cpp" />
     <ClCompile Include="CmpbinLibrary\MurmurHash3.cpp" />
+    <ClCompile Include="WorkerThread.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CmpbinLibrary\Cmpbin.h" />
@@ -173,6 +174,7 @@
     <ClInclude Include="CmpbinFrame.h" />
     <ClInclude Include="CmpbinLibrary\MurmurHash3.h" />
     <ClInclude Include="ListDataItem.h" />
+    <ClInclude Include="WorkerThread.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
