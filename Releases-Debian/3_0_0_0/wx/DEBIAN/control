@@ -1,0 +1,9 @@
+Package: wx3-1-4
+Version: 3.0.0.0
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: 1024
+Maintainer: github.com/igolovic/cmpbin
+Description: wxWidgets dependencies for cmpbin

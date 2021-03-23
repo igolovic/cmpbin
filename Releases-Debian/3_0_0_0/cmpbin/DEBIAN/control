@@ -1,0 +1,10 @@
+Package: cmpbin
+Version: 3.0.0.0
+Section: custom
+Priority: optional
+Architecture: all
+Essential: no
+Installed-Size: 1024
+Maintainer: github.com/igolovic/cmpbin
+Description: Compare files in two folders by their binary content and find matches and unique files
+Depends: wx3-1-4
