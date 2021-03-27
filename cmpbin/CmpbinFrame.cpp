@@ -128,7 +128,6 @@ void CmpbinFrame::BtnRunComparisonEvent(wxCommandEvent &event)
 		if (wxDirExists(dirPath1) == false)
 		{
 			wxMessageBox(wxT("Directory 1 is not valid"));
-			wxEndBusyCursor();
 			Enable();
 			return;
 		}
