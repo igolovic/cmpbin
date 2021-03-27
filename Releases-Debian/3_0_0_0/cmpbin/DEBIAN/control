@@ -7,4 +7,4 @@ Essential: no
 Installed-Size: 1024
 Maintainer: github.com/igolovic/cmpbin
 Description: Compare files in two folders by their binary content and find matches and unique files
-Depends: wx3-1-4
+Depends: libwxbase3.0-0v5, libwxgtk3.0-0v5, libcanberra-gtk-module, libcanberra-gtk3-module
