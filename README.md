@@ -3,10 +3,11 @@ CMPBIN - CROSS-PLATFORM GUI DESKTOP APPLICATION WHICH COMPARES FILES IN TWO FOLD
 
 Ivan Golović
 
-Application has two builds, one in form of Debian (.deb) package and other in form of Windows .exe file with .dll dependencies (enclosed in .zip file). These builds are built from same source code and function in the same way on both operating systems, purpose of this program is to compare binary content of all files from two directories and detect:
-    - files that exist in both directories
-    - files that exist only in directory 1
-    - files that exist only in directory 2 Comparison result is displayed in listview and textual version of comparison that can be copy-pasted.
+Application has two builds, one in form of Debian (.deb) package and other in form of Windows .exe file with .dll dependencies (enclosed in .zip file). These builds are built from same source code and function in the same way on both operating systems, purpose of this program is to compare binary content of all files from two directories and detect:  
+    - files that exist in both directories  
+    - files that exist only in directory 1  
+    - files that exist only in directory 2  
+Comparison result is displayed in listview and textual version of comparison that can be copy-pasted.  
 Application uses wxWidgets libraries to perform cross-platform access to file system and GUI. For hashing is used Murmur3 algorithm. Linux Debian and Windows builds are available. 
 
 INTRODUCTION
