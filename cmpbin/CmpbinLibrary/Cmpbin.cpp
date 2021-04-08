@@ -31,16 +31,20 @@ void Compare(
     std::vector<ListDataItem> *pListDataItems = new std::vector<ListDataItem>();
 
     status(pParent, statusEvent, wxT("Starting comparison..."));
-
-	textOutput.Append("Running comparison...\n");
-	textOutput.Append(wxString::Format(wxT("\n1st directory is '%s'\n"), dirPath1));
-	textOutput.Append(wxString::Format(wxT("2nd directory is '%s'\n\n"), dirPath2));
+	
+	/* Add pre-hash comparison by file size (hash comparison is expensive)
+	- move file listing (using GetNextFile to get size immediatelly?) 
+	- make dictionaries <file size, path> and find file size matches, unique1 file sizes, unique2 file sizes
+	- unique1 file sizes, unique2 file sizes - go to unique results right away
+	- for file size matches run hash creation and comparison
+	*/
 
 	// Create dictionaries with hashes of file contents and file names
 	std::map<std::string, std::vector<std::string>> dictionaries[2];
 	for (int counter = 0; counter < 2; counter++)
 	{
-		textOutput.Append(wxString::Format(wxT("Creating hashes for directory '%s'\n"), dirPaths[counter]));
+		wxString statusMessage = wxString::Format(wxT("Creating hashes for '%s'\n"), dirPaths[counter]);
+		status(pParent, statusEvent, statusMessage);
 
 		const wxString &dirPath = dirPaths[counter];
 		wxDir dir;
@@ -57,7 +61,9 @@ void Compare(
                     FreeResources(pListDataItems);
                     return;
                 }
-                status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
+                
+				// Reporting progress in GUI incurs performance penalty, comment it out
+				//status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
 
 				wxString filePath = files->Item(i);
 				if (filePath.empty() == false)
@@ -66,7 +72,7 @@ void Compare(
 					std::ifstream inputFile(filePathStr, std::ios::binary);
 					if (inputFile.fail())
 					{
-						textOutput.Append(wxString::Format(wxT("Invalid stream for: '%s'\nExiting\n"), filePath));
+						textOutput.Append(wxString::Format(wxT("Invalid stream for: '%s'. Exiting."), filePath));
 						finished(pParent, finishedEvent, -1, textOutput, pListDataItems);
 						return;
 					}
@@ -108,6 +114,8 @@ void Compare(
 	int matchCount = 0, directory1UniqueCount = 0, directory2UniqueCount = 0;
 	std::unordered_set<std::string> keysInDictionary1;
 	std::map<std::string, std::vector<std::string>>::iterator itDict;
+
+	// Check for matched files and unique files in directory 1
 	for (itDict = dictionaries[0].begin(); itDict != dictionaries[0].end(); itDict++)
 	{
         if (isCancelled(pParent, statusEvent))
@@ -120,6 +128,7 @@ void Compare(
 		std::string key = itDict->first;
 		listDataItem.Hash = key;
 
+		// Matched file
 		if (dictionaries[1].find(key) != dictionaries[1].end())
 		{
 			listDataItem.Hash = itDict->first;
@@ -133,6 +142,7 @@ void Compare(
 		}
 		else
 		{
+			// Unique file in directory 1
 			listDataItem.FilesFromDirectory1 = itDict->second;
 			keysInDictionary1.insert(key);
 
@@ -143,6 +153,7 @@ void Compare(
 
     status(pParent, statusEvent, wxT("Detecting files unique for directory 2..."));
 
+	// Check for unique files in directory 2
 	for (itDict = dictionaries[1].begin(); itDict != dictionaries[1].end(); itDict++)
 	{
         if (isCancelled(pParent, statusEvent))
@@ -151,6 +162,7 @@ void Compare(
             return;
         }
 
+		// Unique file in directory 2
 		if (keysInDictionary1.find(itDict->first) == keysInDictionary1.end())
 		{
 			ListDataItem listDataItem = ListDataItem();
@@ -165,17 +177,8 @@ void Compare(
 
 	status(pParent, statusEvent, wxT("Creating clipboard text..."));
 
-	textOutput.Append(wxT("\nFile comparisons using generated hashes:\n"));
-
-	constexpr int filenamePaddedLength = 64;
-	wxString blank = L" ";
-
-	textOutput.Append(wxT("\nFile hash\n"));
-	textOutput.Append(wxString(wxT("1st directory file(s)")).Pad(filenamePaddedLength - 21, ' ', true));
-	textOutput.Append(wxString(wxT("2nd directory file(s)")).Pad(filenamePaddedLength - 21, ' ', false));
-	textOutput.Append(wxT("\n"));
-
-	for (auto listDataItem : *pListDataItems) // access by reference to avoid copying
+	// Build CSV textual description
+	for (auto listDataItem : *pListDataItems)
 	{
         if (isCancelled(pParent, statusEvent))
         {
@@ -183,44 +186,20 @@ void Compare(
             return;
         }
 
-		textOutput.Append(wxString::Format(wxT("\n%s\n"), listDataItem.Hash));
+		textOutput.Append(wxString::Format(wxT("%s,"), listDataItem.Hash));
 
-		// Build text descriptions
-		int size1 = listDataItem.FilesFromDirectory1.size();
-		int size2 = listDataItem.FilesFromDirectory2.size();
-		int maxCount = size1 > size2 ? size1 : size2;
-		for (int i = 0; i < maxCount; i++)
-		{
-			blank = L" ";
-			if (i < size1)
-			{
-				wxString filename = listDataItem.FilesFromDirectory1[i], filenamePadded;
-				if (filename.size() < filenamePaddedLength)
-					filenamePadded = filename.Pad(filenamePaddedLength - filename.size(), ' ', true);
-				else
-					filenamePadded = filename + " ";
+		for (int i = 0; i < listDataItem.FilesFromDirectory1.size(); i++)
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), listDataItem.FilesFromDirectory1[i]));
 
-				textOutput.Append(filenamePadded);
-			}
-			else
-				textOutput.Append(blank.Pad(filenamePaddedLength - 1, ' ', true));
+		textOutput.Append(",");
 
-			if (i < size2)
-			{
-				wxString filename = listDataItem.FilesFromDirectory2[i], filenamePadded;
-				if (filename.size() < filenamePaddedLength)
-					filenamePadded = filename.Pad(filenamePaddedLength - filename.size(), ' ', false);
-				else
-					filenamePadded = filename + " ";
+		for (int i = 0; i < listDataItem.FilesFromDirectory2.size(); i++)
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), listDataItem.FilesFromDirectory2[i]));
 
-				textOutput.Append(filenamePadded + "\n");
-			}
-			else
-				textOutput.Append(blank.Pad(filenamePaddedLength - 1, ' ', true) + "\n");
-		}
+		textOutput.Append("\n");
 	}
 
-    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %d, unique files in directory 1: %d, unique files in directory 2: %d", matchCount, directory1UniqueCount, directory2UniqueCount));
+    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %d, unique files in directory 1: %d, unique files in directory 2: %d - please note that 'unique files' exclude from count binary copies of a same file in same directory", matchCount, directory1UniqueCount, directory2UniqueCount));
     finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
 }
 

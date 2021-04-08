@@ -78,7 +78,7 @@ void CmpbinFrame::InitializeUI()
     CmpbinFrame::BtnRunComparison = new wxButton(MainPanel, wxID_BtnRunComparison, wxT("Run comparison"));
 	gridSizer2->Add(CmpbinFrame::BtnRunComparison, 0);
 
-	CmpbinFrame::BtnCopyComparisonTextToClipboard = new wxButton(MainPanel, wxID_BtnSaveAsFile, wxT("Copy comparison text to clipboard"));
+	CmpbinFrame::BtnCopyComparisonTextToClipboard = new wxButton(MainPanel, wxID_BtnSaveAsFile, wxT("Copy comparison as CSV to clipboard"));
 	gridSizer2->Add(CmpbinFrame::BtnCopyComparisonTextToClipboard, 0, wxLEFT | wxBOTTOM, 5);
 
 	CmpbinFrame::BtnAbout = new wxButton(MainPanel, wxID_BtnAbout, wxT("About"));
