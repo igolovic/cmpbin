@@ -32,10 +32,12 @@ void Compare(
 
     status(pParent, statusEvent, wxT("Starting comparison..."));
 	
-	/* Add pre-hash comparison by file size (hash comparison is expensive)
-	- move file listing (using GetNextFile to get size immediatelly?) 
-	- make dictionaries <file size, path> and find file size matches, unique1 file sizes, unique2 file sizes
-	- unique1 file sizes, unique2 file sizes - go to unique results right away
+	/* TODO:
+	- add pre-hash comparison by file size (hash comparison is expensive)
+	- list files (using GetNextFile to get file size immediatelly?)
+	- create dictionaries with file sizes and file names
+	- find file size matches, unique1 file sizes, unique2 file sizes
+	- unique1 file sizes, unique2 file sizes - go to unique results immediatelly
 	- for file size matches run hash creation and comparison
 	*/
 
@@ -108,14 +110,13 @@ void Compare(
 		}
 	}
 
-	status(pParent, statusEvent, wxT("Detecting files unique for directory 1 and file matches..."));
+	status(pParent, statusEvent, wxT("Detecting file matches and files unique for directory 1..."));
 
-	// Compare hashes and associate file names
 	int matchCount = 0, directory1UniqueCount = 0, directory2UniqueCount = 0;
 	std::unordered_set<std::string> keysInDictionary1;
 	std::map<std::string, std::vector<std::string>>::iterator itDict;
 
-	// Check for matched files and unique files in directory 1
+	// Compare hashes to find matched files and unique files in directory 1
 	for (itDict = dictionaries[0].begin(); itDict != dictionaries[0].end(); itDict++)
 	{
         if (isCancelled(pParent, statusEvent))
@@ -153,7 +154,7 @@ void Compare(
 
     status(pParent, statusEvent, wxT("Detecting files unique for directory 2..."));
 
-	// Check for unique files in directory 2
+	// Compare hashes to find unique files in directory 2
 	for (itDict = dictionaries[1].begin(); itDict != dictionaries[1].end(); itDict++)
 	{
         if (isCancelled(pParent, statusEvent))
