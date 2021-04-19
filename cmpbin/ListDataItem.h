@@ -7,7 +7,8 @@
 struct ListDataItem
 {
 public:
-	std::string Hash;
+	unsigned long FileSize;
+	std::string FileHash;
 	std::vector<std::string> FilesFromDirectory1;
 	std::vector<std::string> FilesFromDirectory2;
 

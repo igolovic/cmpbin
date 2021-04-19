@@ -1,6 +1,10 @@
 //#ifndef DEBUG
 //#define DEBUG
 //#endif
+//
+//#ifndef LINUX
+//#define LINUX
+//#endif
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -63,10 +67,15 @@ void CmpbinFrame::InitializeUI()
 		wxDefaultPosition, wxSize(350, wxDefaultCoord));
 
 #ifdef DEBUG
-//	CmpbinFrame::DirPickerCtrl1->SetPath("C:\\cmp1");
-//	CmpbinFrame::DirPickerCtrl2->SetPath("C:\\cmp2");
+
+#ifdef LINUX
+	CmpbinFrame::DirPickerCtrl1->SetPath("D:\\cmp-folder-1");
+	CmpbinFrame::DirPickerCtrl2->SetPath("D:\\cmp-folder-2");
+#else
 	CmpbinFrame::DirPickerCtrl1->SetPath("/home/user/Documents/cmp1");
 	CmpbinFrame::DirPickerCtrl2->SetPath("/home/user/Documents/cmp2");
+#endif
+
 #endif
 
 	gridSizer1->Add(CmpbinFrame::StDir1, 0, wxALIGN_CENTRE_VERTICAL | wxRIGHT, 8);
@@ -182,7 +191,7 @@ void CmpbinFrame::WorkerThreadFinishedEvent(wxCommandEvent& event)
         int rowIndex = 0;
         for (std::vector<ListDataItem>::iterator it = pListDataItems->begin(); it != pListDataItems->end(); ++it)
         {
-            CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->Hash);
+            CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->FileHash);
 
             if (it->FilesFromDirectory1.size() > 0)
             {

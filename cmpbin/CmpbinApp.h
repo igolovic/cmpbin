@@ -3,7 +3,7 @@
 
 #include <wx/app.h>
 
-#define    APP_VERSION_STR  wxT("3.0.0.0")
+#define    APP_VERSION_STR  wxT("4.0.0.0")
 
 class CmpbinApp : public wxApp
 {

@@ -18,7 +18,7 @@
 void Compare(
     wxString dirPath1,
     wxString dirPath2,
-    CmpbinFrame* pParent,
+    CmpbinFrame *pParent,
     wxCommandEvent statusEvent,
     wxCommandEvent finishedEvent,
     void (*status)(CmpbinFrame*, wxCommandEvent, wxString),
@@ -28,96 +28,186 @@ void Compare(
 {
 	const wxString dirPaths[2] = { dirPath1 , dirPath2 };
     wxString textOutput;
-    std::vector<ListDataItem> *pListDataItems = new std::vector<ListDataItem>();
+	std::vector<ListDataItem> *pListDataItems_unique1 = new std::vector<ListDataItem>();
+	std::vector<ListDataItem> *pListDataItems_unique2 = new std::vector<ListDataItem>();
+	std::vector<ListDataItem> *pListDataItems_matched = new std::vector<ListDataItem>();
+	std::vector<ListDataItem> *pListDataItems = new std::vector<ListDataItem>();
 
     status(pParent, statusEvent, wxT("Starting comparison..."));
-	
-	/* TODO:
-	- add pre-hash comparison by file size (hash comparison is expensive)
-	- list files (using GetNextFile to get file size immediatelly?)
-	- create dictionaries with file sizes and file names
-	- find file size matches, unique1 file sizes, unique2 file sizes
-	- unique1 file sizes, unique2 file sizes - go to unique results immediatelly
-	- for file size matches run hash creation and comparison
-	*/
 
-	// Create dictionaries with hashes of file contents and file names
-	std::map<std::string, std::vector<std::string>> dictionaries[2];
-	for (int counter = 0; counter < 2; counter++)
+	// Create dictionaries with file sizes and file names
+	std::map<unsigned long, std::vector<std::string>> dictionaries_fileSize_fileName[2];
+	for (int counterDict = 0; counterDict < 2; counterDict++)
 	{
-		wxString statusMessage = wxString::Format(wxT("Creating hashes for '%s'\n"), dirPaths[counter]);
+		wxString statusMessage = wxString::Format(wxT("Creating size-name dictionary for '%s'"), dirPaths[counterDict]);
 		status(pParent, statusEvent, statusMessage);
 
-		const wxString &dirPath = dirPaths[counter];
+		const wxString &dirPath = dirPaths[counterDict];
 		wxDir dir;
 		dir.Open(dirPath);
 		if (dir.IsOpened())
 		{
 			wxArrayString *files = new wxArrayString;
 
+			// Get all files for diresctory
 			dir.GetAllFiles(dirPath, files, wxEmptyString, wxDIR_FILES);
-			for (size_t i = 0; i < files->Count(); i++)
+			for (size_t counterFile = 0; counterFile < files->Count(); counterFile++)
 			{
-                if (isCancelled(pParent, statusEvent))
-                {
-                    FreeResources(pListDataItems);
-                    return;
-                }
-                
-				// Reporting progress in GUI incurs performance penalty, comment it out
-				//status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
+				if (isCancelled(pParent, statusEvent))
+				{
+					FreeResources(pListDataItems);
+					return;
+				}
 
-				wxString filePath = files->Item(i);
+				wxString filePath = files->Item(counterFile);
 				if (filePath.empty() == false)
 				{
 					std::string filePathStr = filePath.ToStdString();
-					std::ifstream inputFile(filePathStr, std::ios::binary);
-					if (inputFile.fail())
-					{
-						textOutput.Append(wxString::Format(wxT("Invalid stream for: '%s'. Exiting."), filePath));
-						finished(pParent, finishedEvent, -1, textOutput, pListDataItems);
-						return;
-					}
-					wxString fileName = wxFileNameFromPath(filePath);
-					std::string fileNameStr = fileName.ToStdString();
 
-					// Resolve "most vexing parse" and read all byte content from file stream to vector
-					std::vector<char> data((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
-					uint64_t len = data.size();
-
-					// Make file hash.
-					uint64_t seed = 1;
-					uint64_t hashParts[2];
-					MurmurHash3_x64_128(&data[0], len, seed, hashParts);
-
-					std::string hash = std::to_string(hashParts[0]);
-					hash += std::to_string(hashParts[1]);
-
-					// Put file name into dictionary.
-					if (dictionaries[counter].find(hash) != dictionaries[counter].end())
-						dictionaries[counter][hash].push_back(fileNameStr);
+					wxStructStat strucStat;
+					wxStat(filePathStr, &strucStat);
+					unsigned long filesize = (unsigned long)strucStat.st_size;
+				
+					// If that size is already in dictionary, add it to vector.
+					if (dictionaries_fileSize_fileName[counterDict].find(filesize) != dictionaries_fileSize_fileName[counterDict].end())
+						dictionaries_fileSize_fileName[counterDict][filesize].push_back(filePathStr);
 					else
 					{
-						std::vector<std::string> filePaths = std::vector<std::string>();
-						filePaths.push_back(fileNameStr);
-						dictionaries[counter].insert(std::make_pair(hash, filePaths));
+						std::vector<std::string> fileNameStrs = std::vector<std::string>();
+						fileNameStrs.push_back(filePathStr);
+						dictionaries_fileSize_fileName[counterDict].insert(std::make_pair(filesize, fileNameStrs));
 					}
-
-					inputFile.close();
-					data.clear();
 				}
 			}
 		}
 	}
 
-	status(pParent, statusEvent, wxT("Detecting file matches and files unique for directory 1..."));
+	status(pParent, statusEvent, wxT("Detecting - by file size - unique files and matches"));
 
-	int matchCount = 0, directory1UniqueCount = 0, directory2UniqueCount = 0;
-	std::unordered_set<std::string> keysInDictionary1;
-	std::map<std::string, std::vector<std::string>>::iterator itDict;
+	std::unordered_set<unsigned long> fileSizesMatched;
+	std::map<unsigned long, std::vector<std::string>>::iterator itDict_fileSize_fileName;
+
+	// By filesize determine: unique files from directory 1, matched files
+	std::vector<std::string> fileNamesPerDirectories[2];
+	for (itDict_fileSize_fileName = dictionaries_fileSize_fileName[0].begin(); itDict_fileSize_fileName != dictionaries_fileSize_fileName[0].end(); itDict_fileSize_fileName++)
+	{
+		if (isCancelled(pParent, statusEvent))
+		{
+			FreeResources(pListDataItems);
+			return;
+		}
+
+		ListDataItem listDataItem = ListDataItem();
+		unsigned long fileSize = itDict_fileSize_fileName->first;
+
+		if (dictionaries_fileSize_fileName[1].find(fileSize) != dictionaries_fileSize_fileName[1].end())
+		{
+			// Matched file size
+			std::vector<std::string> matchedFiles = dictionaries_fileSize_fileName[1][fileSize];
+			fileSizesMatched.insert(fileSize);
+			
+			for (auto filePathDirectory1 : itDict_fileSize_fileName->second)
+				fileNamesPerDirectories[0].push_back(filePathDirectory1);
+
+			for (auto filePathDirectory2 : matchedFiles)
+				fileNamesPerDirectories[1].push_back(filePathDirectory2);
+		}
+		else
+		{
+			listDataItem.FileSize = fileSize;
+			listDataItem.FilesFromDirectory1 = itDict_fileSize_fileName->second;
+
+			// Unique file size in directory 1
+			pListDataItems_unique1->push_back(listDataItem);
+		}
+	}
+
+	// By file size determine: unique files from directory 2
+	for (itDict_fileSize_fileName = dictionaries_fileSize_fileName[1].begin(); itDict_fileSize_fileName != dictionaries_fileSize_fileName[1].end(); itDict_fileSize_fileName++)
+	{
+		if (isCancelled(pParent, statusEvent))
+		{
+			FreeResources(pListDataItems);
+			return;
+		}
+
+		// Unique file in directory 2
+		if (fileSizesMatched.find(itDict_fileSize_fileName->first) == fileSizesMatched.end())
+		{
+			ListDataItem listDataItem = ListDataItem();
+			listDataItem.FileSize = itDict_fileSize_fileName->first;
+			listDataItem.FilesFromDirectory2 = itDict_fileSize_fileName->second;
+
+			pListDataItems_unique2->push_back(listDataItem);
+		}
+	}
+
+	std::map<std::string, std::vector<std::string>> dictionaries_fileHash_fileName[2];
+	for (int counterDict = 0; counterDict < 2; counterDict++)
+	{
+		wxString statusMessage = wxString::Format(wxT("Creating hash-name dictionary for '%s'"), dirPaths[counterDict]);
+		status(pParent, statusEvent, statusMessage);
+
+		for (size_t counterFilePath = 0; counterFilePath < fileNamesPerDirectories[counterDict].size(); counterFilePath++)
+		{
+			if (isCancelled(pParent, statusEvent))
+			{
+				FreeResources(pListDataItems);
+				return;
+			}
+
+			// Reporting progress in GUI incurs performance penalty, comment it out
+			//status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
+
+			// Get file path
+			wxString filePath = fileNamesPerDirectories[counterDict][counterFilePath];
+			if (filePath.empty() == false)
+			{
+				std::string filePathStr = filePath.ToStdString();
+				std::ifstream inputFile(filePathStr, std::ios::binary);
+				if (inputFile.fail())
+				{
+					textOutput.Append(wxString::Format(wxT("Invalid stream for: '%s'. Exiting."), filePath));
+					finished(pParent, finishedEvent, -1, textOutput, pListDataItems);
+					return;
+				}
+
+				// Resolve "most vexing parse" and read all byte content from file stream to vector
+				std::vector<char> data((std::istreambuf_iterator<char>(inputFile)), std::istreambuf_iterator<char>());
+				uint64_t len = data.size();
+
+				// Make file hash.
+				uint64_t seed = 1;
+				uint64_t hashParts[2];
+				MurmurHash3_x64_128(&data[0], len, seed, hashParts);
+
+				std::string fileHash = std::to_string(hashParts[0]);
+				fileHash += std::to_string(hashParts[1]);
+
+				// Put file name into dictionary.
+				if (dictionaries_fileHash_fileName[counterDict].find(fileHash) != dictionaries_fileHash_fileName[counterDict].end())
+					dictionaries_fileHash_fileName[counterDict][fileHash].push_back(filePathStr);
+				else
+				{
+					std::vector<std::string> fileNameStrs = std::vector<std::string>();
+					fileNameStrs.push_back(filePathStr);
+					dictionaries_fileHash_fileName[counterDict].insert(std::make_pair(fileHash, fileNameStrs));
+				}
+
+				inputFile.close();
+				data.clear();
+			}
+		}
+	}
+
+	status(pParent, statusEvent, wxT("Detecting - by file hash - unique files and matches"));
+
+
+	std::unordered_set<std::string> fileHashesMatched;
+	std::map<std::string, std::vector<std::string>>::iterator itDict_fileHash_fileName;
 
 	// Compare hashes to find matched files and unique files in directory 1
-	for (itDict = dictionaries[0].begin(); itDict != dictionaries[0].end(); itDict++)
+	for (itDict_fileHash_fileName = dictionaries_fileHash_fileName[0].begin(); itDict_fileHash_fileName != dictionaries_fileHash_fileName[0].end(); itDict_fileHash_fileName++)
 	{
         if (isCancelled(pParent, statusEvent))
         {
@@ -126,36 +216,29 @@ void Compare(
         }
 
 		ListDataItem listDataItem = ListDataItem();
-		std::string key = itDict->first;
-		listDataItem.Hash = key;
+		std::string fileHash = itDict_fileHash_fileName->first;
+		listDataItem.FileHash = fileHash;
+		listDataItem.FilesFromDirectory1 = itDict_fileHash_fileName->second;
 
 		// Matched file
-		if (dictionaries[1].find(key) != dictionaries[1].end())
+		if (dictionaries_fileHash_fileName[1].find(fileHash) != dictionaries_fileHash_fileName[1].end())
 		{
-			listDataItem.Hash = itDict->first;
-			listDataItem.FilesFromDirectory1 = itDict->second;
-
-			std::vector<std::string> matchedFiles = dictionaries[1][key];
+			std::vector<std::string> matchedFiles = dictionaries_fileHash_fileName[1][fileHash];
 			listDataItem.FilesFromDirectory2 = matchedFiles;
-			keysInDictionary1.insert(key);
-
-			matchCount++;
+			fileHashesMatched.insert(fileHash);
+			pListDataItems_matched->push_back(listDataItem);
 		}
 		else
 		{
 			// Unique file in directory 1
-			listDataItem.FilesFromDirectory1 = itDict->second;
-			keysInDictionary1.insert(key);
-
-            directory1UniqueCount++;
+			pListDataItems_unique1->push_back(listDataItem);
 		}
-		pListDataItems->push_back(listDataItem);
 	}
 
     status(pParent, statusEvent, wxT("Detecting files unique for directory 2..."));
 
 	// Compare hashes to find unique files in directory 2
-	for (itDict = dictionaries[1].begin(); itDict != dictionaries[1].end(); itDict++)
+	for (itDict_fileHash_fileName = dictionaries_fileHash_fileName[1].begin(); itDict_fileHash_fileName != dictionaries_fileHash_fileName[1].end(); itDict_fileHash_fileName++)
 	{
         if (isCancelled(pParent, statusEvent))
         {
@@ -164,19 +247,38 @@ void Compare(
         }
 
 		// Unique file in directory 2
-		if (keysInDictionary1.find(itDict->first) == keysInDictionary1.end())
+		if (fileHashesMatched.find(itDict_fileHash_fileName->first) == fileHashesMatched.end())
 		{
 			ListDataItem listDataItem = ListDataItem();
-			listDataItem.Hash = itDict->first;
-			listDataItem.FilesFromDirectory2 = itDict->second;
+			listDataItem.FileHash = itDict_fileHash_fileName->first;
+			listDataItem.FilesFromDirectory2 = itDict_fileHash_fileName->second;
 
-			directory2UniqueCount++;
-
-			pListDataItems->push_back(listDataItem);
+			pListDataItems_unique2->push_back(listDataItem);
 		}
 	}
 
 	status(pParent, statusEvent, wxT("Creating clipboard text..."));
+
+	// Add all unique and matched files to single list
+	size_t countUnique1 = 0, countUnique2 = 0, countMatched1 = 0, countMatched2 = 0;
+	for (auto item : *pListDataItems_unique1)
+	{
+		pListDataItems->push_back(item);
+		countUnique1 += item.FilesFromDirectory1.size();
+	}
+
+	for (auto item : *pListDataItems_matched)
+	{
+		pListDataItems->push_back(item);
+		countMatched1 += item.FilesFromDirectory1.size();
+		countMatched2 += item.FilesFromDirectory2.size();
+	}
+
+	for (auto item : *pListDataItems_unique2)
+	{
+		pListDataItems->push_back(item);
+		countUnique2 += item.FilesFromDirectory2.size();
+	}
 
 	// Build CSV textual description
 	for (auto listDataItem : *pListDataItems)
@@ -187,7 +289,9 @@ void Compare(
             return;
         }
 
-		textOutput.Append(wxString::Format(wxT("%s,"), listDataItem.Hash));
+		textOutput.Append(wxString::Format(wxT("%lu,"), listDataItem.FileSize));
+
+		textOutput.Append(wxString::Format(wxT("%s,"), listDataItem.FileHash));
 
 		for (int i = 0; i < listDataItem.FilesFromDirectory1.size(); i++)
 			textOutput.Append(wxString::Format(wxT(" \"%s\""), listDataItem.FilesFromDirectory1[i]));
@@ -200,8 +304,14 @@ void Compare(
 		textOutput.Append("\n");
 	}
 
-    status(pParent, statusEvent, wxString::Format("Comparison finished - files matched: %d, unique files in directory 1: %d, unique files in directory 2: %d - please note that 'unique files' exclude from count binary copies of a same file in same directory", matchCount, directory1UniqueCount, directory2UniqueCount));
-    finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
+    status(pParent, statusEvent, wxString::Format("Comparison :: directory 1 files: unique: %zu, matched: %zu :: directory 2 files: unique: %zu, matched: %zu", 
+		countUnique1, 
+		countMatched1, 
+		countUnique2,
+		countMatched2
+	));
+    
+	finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
 }
 
 void FreeResources(std::vector<ListDataItem> *pListDataItems)
