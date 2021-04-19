@@ -1,5 +1,5 @@
 # cmpbin
-CMPBIN - CROSS-PLATFORM GUI DESKTOP APPLICATION WHICH COMPARES FILES IN TWO FOLDERS BY THEIR BINARY CONTENT AND FINDS MATCHES AND UNIQUE FILES
+CMPBIN - CROSS-PLATFORM GUI DESKTOP APPLICATION WHICH COMPARES FILES IN TWO FOLDERS BY FILE SIZE AND BINARY CONTENT AND FINDS MATCHES AND UNIQUE FILES
 
 Ivan Golović
 
@@ -7,12 +7,12 @@ Purpose of this application is to compare binary content of all files from two d
     - files that exist in both directories  
     - files that exist only in directory 1  
     - files that exist only in directory 2  
-Comparison result is displayed in listview and textual version of comparison that can be copy-pasted.  
+Comparison result is displayed in listview and CSV version of comparison result that can be copy-pasted.  
 Application uses wxWidgets libraries to perform cross-platform access to file system and GUI. For hashing is used Murmur3 algorithm. Application has two builds, one in form of Debian package targeting Linux Debian and other in form of Windows .exe with .dll dependencies targeting Windows. These builds are built from same source code and function in the same way on both operating systems, 
 
 INTRODUCTION
 
-This article describes how to build a C++ application that compares all files in two folders according to their binary content using fast-generated hashes (using Austin Appleby's MurMur3 hash) and dictionaries so that optimal performance is achieved. Emphasis is put on performance and cross-platform capability since the application is using wxWidgets framework to avoid direct calls to OS-specific APIs.
+This article describes how to build a C++ application that compares all files in two folders according to their binary content by using hashes (Austin Appleby's MurMur3 hash) and dictionaries so that better performance is achieved. Also, a pre-comparison by file size is used to minimize number of files for which hash comparison needs to be performed. Emphasis is put on cross-platform capability since the application is using wxWidgets framework to avoid direct calls to OS-specific APIs.
 Source code might be useful to developers who have interest in binary comparison of files and cross-platform desktop development using wxWidgets in C++.
 
 Application builds come in two variants:
@@ -32,6 +32,9 @@ These were tools used for development of version 3.0.0.0 of cmpbin (in case of l
 HOW IT WORKS
 
 User selects directories "directory 1" and "directory 2". After comparison is started program will:
+- enumerate files in both directories and collect file sizes
+- compare which files are unique in directories by their file size and which have matching files sizes
+- for files that have same file size in bytes in both folder, hashes will be generated to determine difference of equality
 - create hashes of files in "directory 1" and put them in dictionary of file hashes from "directory 1"
 - create hashes of files in "directory 2" and put them in dictionary of file hashes from "directory 2"
 - loop through hashes of files from "directory 1" and detect matches with file hashes from "directory 2", detect file hashes that exist only in "directory 1" but not in "directory 2"
