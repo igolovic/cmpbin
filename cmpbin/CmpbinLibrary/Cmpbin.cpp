@@ -36,7 +36,7 @@ void Compare(
     status(pParent, statusEvent, wxT("Starting comparison..."));
 
 	// Create dictionaries with file sizes and file names
-	std::map<unsigned long, std::vector<std::string>> dictionaries_fileSize_fileName[2];
+	std::map<unsigned long, std::vector<std::string>> dictionaries_fileSize_filePath[2];
 	for (int counterDict = 0; counterDict < 2; counterDict++)
 	{
 		wxString statusMessage = wxString::Format(wxT("Creating size-name dictionary for '%s'"), dirPaths[counterDict]);
@@ -67,15 +67,15 @@ void Compare(
 					wxStructStat strucStat;
 					wxStat(filePathStr, &strucStat);
 					unsigned long filesize = (unsigned long)strucStat.st_size;
-				
+
 					// If that size is already in dictionary, add it to vector.
-					if (dictionaries_fileSize_fileName[counterDict].find(filesize) != dictionaries_fileSize_fileName[counterDict].end())
-						dictionaries_fileSize_fileName[counterDict][filesize].push_back(filePathStr);
+					if (dictionaries_fileSize_filePath[counterDict].find(filesize) != dictionaries_fileSize_filePath[counterDict].end())
+						dictionaries_fileSize_filePath[counterDict][filesize].push_back(filePathStr);
 					else
 					{
-						std::vector<std::string> fileNameStrs = std::vector<std::string>();
-						fileNameStrs.push_back(filePathStr);
-						dictionaries_fileSize_fileName[counterDict].insert(std::make_pair(filesize, fileNameStrs));
+						std::vector<std::string> filePathStrs = std::vector<std::string>();
+						filePathStrs.push_back(filePathStr);
+						dictionaries_fileSize_filePath[counterDict].insert(std::make_pair(filesize, filePathStrs));
 					}
 				}
 			}
@@ -85,11 +85,12 @@ void Compare(
 	status(pParent, statusEvent, wxT("Detecting - by file size - unique files and matches"));
 
 	std::unordered_set<unsigned long> fileSizesMatched;
-	std::map<unsigned long, std::vector<std::string>>::iterator itDict_fileSize_fileName;
+	std::map<unsigned long, std::vector<std::string>>::iterator itDict_fileSize_filePath;
 
 	// By filesize determine: unique files from directory 1, matched files
-	std::vector<std::string> fileNamesPerDirectories[2];
-	for (itDict_fileSize_fileName = dictionaries_fileSize_fileName[0].begin(); itDict_fileSize_fileName != dictionaries_fileSize_fileName[0].end(); itDict_fileSize_fileName++)
+	std::vector<std::string> nonUniqueFileLists[2];
+	std::map<std::string, unsigned long> dictionary_nonUniqueFilePath_fileSize;
+	for (itDict_fileSize_filePath = dictionaries_fileSize_filePath[0].begin(); itDict_fileSize_filePath != dictionaries_fileSize_filePath[0].end(); itDict_fileSize_filePath++)
 	{
 		if (isCancelled(pParent, statusEvent))
 		{
@@ -98,24 +99,33 @@ void Compare(
 		}
 
 		ListDataItem listDataItem = ListDataItem();
-		unsigned long fileSize = itDict_fileSize_fileName->first;
+		unsigned long fileSize = itDict_fileSize_filePath->first;
 
-		if (dictionaries_fileSize_fileName[1].find(fileSize) != dictionaries_fileSize_fileName[1].end())
+		if (dictionaries_fileSize_filePath[1].find(fileSize) != dictionaries_fileSize_filePath[1].end())
 		{
 			// Matched file size
-			std::vector<std::string> matchedFiles = dictionaries_fileSize_fileName[1][fileSize];
+			std::vector<std::string> matchedFiles = dictionaries_fileSize_filePath[1][fileSize];
 			fileSizesMatched.insert(fileSize);
-			
-			for (auto filePathDirectory1 : itDict_fileSize_fileName->second)
-				fileNamesPerDirectories[0].push_back(filePathDirectory1);
 
-			for (auto filePathDirectory2 : matchedFiles)
-				fileNamesPerDirectories[1].push_back(filePathDirectory2);
+			TODO
+			for (auto filePathsForSize = itDict_fileSize_filePath->second.begin(); itDict_fileSize_filePath->second)
+			{
+                std::string anyFilePath = *filePathsForSize;
+				nonUniqueFileLists[0].push_back(anyFilePath);
+				dictionary_nonUniqueFilePath_fileSize[0].insert(std::make_pair(anyFilePath, fileSize));
+            }
+
+			for (auto filePathsForSize : matchedFiles)
+			{
+                std::string anyFilePath = filePathsForSize.front();
+				nonUniqueFileLists[1].push_back(anyFilePath );
+				dictionary_nonUniqueFilePath_fileSize[1].insert(std::make_pair(anyFilePath, fileSize));
+			}
 		}
 		else
 		{
 			listDataItem.FileSize = fileSize;
-			listDataItem.FilesFromDirectory1 = itDict_fileSize_fileName->second;
+			listDataItem.FilesFromDirectory1 = itDict_fileSize_filePath->second;
 
 			// Unique file size in directory 1
 			pListDataItems_unique1->push_back(listDataItem);
@@ -123,7 +133,7 @@ void Compare(
 	}
 
 	// By file size determine: unique files from directory 2
-	for (itDict_fileSize_fileName = dictionaries_fileSize_fileName[1].begin(); itDict_fileSize_fileName != dictionaries_fileSize_fileName[1].end(); itDict_fileSize_fileName++)
+	for (itDict_fileSize_filePath = dictionaries_fileSize_filePath[1].begin(); itDict_fileSize_filePath != dictionaries_fileSize_filePath[1].end(); itDict_fileSize_filePath++)
 	{
 		if (isCancelled(pParent, statusEvent))
 		{
@@ -132,23 +142,24 @@ void Compare(
 		}
 
 		// Unique file in directory 2
-		if (fileSizesMatched.find(itDict_fileSize_fileName->first) == fileSizesMatched.end())
+		if (fileSizesMatched.find(itDict_fileSize_filePath->first) == fileSizesMatched.end())
 		{
 			ListDataItem listDataItem = ListDataItem();
-			listDataItem.FileSize = itDict_fileSize_fileName->first;
-			listDataItem.FilesFromDirectory2 = itDict_fileSize_fileName->second;
+			listDataItem.FileSize = itDict_fileSize_filePath->first;
+			listDataItem.FilesFromDirectory2 = itDict_fileSize_filePath->second;
 
 			pListDataItems_unique2->push_back(listDataItem);
 		}
 	}
 
+	// Create hashes for files from directories 1 and 2 that have same file sizes
 	std::map<std::string, std::vector<std::string>> dictionaries_fileHash_fileName[2];
 	for (int counterDict = 0; counterDict < 2; counterDict++)
 	{
 		wxString statusMessage = wxString::Format(wxT("Creating hash-name dictionary for '%s'"), dirPaths[counterDict]);
 		status(pParent, statusEvent, statusMessage);
 
-		for (size_t counterFilePath = 0; counterFilePath < fileNamesPerDirectories[counterDict].size(); counterFilePath++)
+		for (size_t counterFilePath = 0; counterFilePath < nonUniqueFileLists[counterDict].size(); counterFilePath++)
 		{
 			if (isCancelled(pParent, statusEvent))
 			{
@@ -160,7 +171,7 @@ void Compare(
 			//status(pParent, statusEvent, wxString::Format(wxT("%s - hashing file %zu of %zu"), dirPath, i + 1, files->Count()));
 
 			// Get file path
-			wxString filePath = fileNamesPerDirectories[counterDict][counterFilePath];
+			wxString filePath = nonUniqueFileLists[counterDict][counterFilePath];
 			if (filePath.empty() == false)
 			{
 				std::string filePathStr = filePath.ToStdString();
@@ -189,9 +200,9 @@ void Compare(
 					dictionaries_fileHash_fileName[counterDict][fileHash].push_back(filePathStr);
 				else
 				{
-					std::vector<std::string> fileNameStrs = std::vector<std::string>();
-					fileNameStrs.push_back(filePathStr);
-					dictionaries_fileHash_fileName[counterDict].insert(std::make_pair(fileHash, fileNameStrs));
+					std::vector<std::string> filePathStrs = std::vector<std::string>();
+					filePathStrs.push_back(filePathStr);
+					dictionaries_fileHash_fileName[counterDict].insert(std::make_pair(fileHash, filePathStrs));
 				}
 
 				inputFile.close();
@@ -216,6 +227,10 @@ void Compare(
         }
 
 		ListDataItem listDataItem = ListDataItem();
+		std::string filePath = itDict_fileHash_fileName->second.front();
+		if (dictionary_nonUniqueFilePath_fileSize.find(filePath) != dictionary_nonUniqueFilePath_fileSize.end())
+            listDataItem.FileSize = dictionary_nonUniqueFilePath_fileSize[filePath];
+
 		std::string fileHash = itDict_fileHash_fileName->first;
 		listDataItem.FileHash = fileHash;
 		listDataItem.FilesFromDirectory1 = itDict_fileHash_fileName->second;
@@ -281,6 +296,7 @@ void Compare(
 	}
 
 	// Build CSV textual description
+	textOutput.Append("Size (bytes);File hash;Directory 1 files;Directory 2 files\n");
 	for (auto listDataItem : *pListDataItems)
 	{
         if (isCancelled(pParent, statusEvent))
@@ -293,24 +309,24 @@ void Compare(
 
 		textOutput.Append(wxString::Format(wxT("%s,"), listDataItem.FileHash));
 
-		for (int i = 0; i < listDataItem.FilesFromDirectory1.size(); i++)
-			textOutput.Append(wxString::Format(wxT(" \"%s\""), listDataItem.FilesFromDirectory1[i]));
+		for (size_t i = 0; i < listDataItem.FilesFromDirectory1.size(); i++)
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory1[i]).GetShortPath()));
 
 		textOutput.Append(",");
 
-		for (int i = 0; i < listDataItem.FilesFromDirectory2.size(); i++)
-			textOutput.Append(wxString::Format(wxT(" \"%s\""), listDataItem.FilesFromDirectory2[i]));
+		for (size_t i = 0; i < listDataItem.FilesFromDirectory2.size(); i++)
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory2[i]).GetShortPath()));
 
 		textOutput.Append("\n");
 	}
 
-    status(pParent, statusEvent, wxString::Format("Comparison :: directory 1 files: unique: %zu, matched: %zu :: directory 2 files: unique: %zu, matched: %zu", 
-		countUnique1, 
-		countMatched1, 
+    status(pParent, statusEvent, wxString::Format("Comparison :: directory 1 files: unique: %zu, matched: %zu :: directory 2 files: unique: %zu, matched: %zu",
+		countUnique1,
+		countMatched1,
 		countUnique2,
 		countMatched2
 	));
-    
+
 	finished(pParent, finishedEvent, 0, textOutput, pListDataItems);
 }
 

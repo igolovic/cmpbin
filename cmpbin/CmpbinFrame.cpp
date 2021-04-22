@@ -1,10 +1,10 @@
-//#ifndef DEBUG
-//#define DEBUG
-//#endif
-//
-//#ifndef LINUX
-//#define LINUX
-//#endif
+#ifndef DEBUG
+#define DEBUG
+#endif
+
+#ifndef LINUX
+#define LINUX
+#endif
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -69,11 +69,11 @@ void CmpbinFrame::InitializeUI()
 #ifdef DEBUG
 
 #ifdef LINUX
+	CmpbinFrame::DirPickerCtrl1->SetPath("/media/user/DATA/cmp-folder-1");
+	CmpbinFrame::DirPickerCtrl2->SetPath("/media/user/DATA/cmp-folder-2");
+#else
 	CmpbinFrame::DirPickerCtrl1->SetPath("D:\\cmp-folder-1");
 	CmpbinFrame::DirPickerCtrl2->SetPath("D:\\cmp-folder-2");
-#else
-	CmpbinFrame::DirPickerCtrl1->SetPath("/home/user/Documents/cmp1");
-	CmpbinFrame::DirPickerCtrl2->SetPath("/home/user/Documents/cmp2");
 #endif
 
 #endif
