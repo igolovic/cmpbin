@@ -103,11 +103,19 @@ void Compare(
 
 		if (dictionaries_fileSize_filePath[1].find(fileSize) != dictionaries_fileSize_filePath[1].end())
 		{
-			// Matched file size
-			std::vector<std::string> matchedFilePaths = dictionaries_fileSize_filePath[1][fileSize];
+			// Add matched files by size from directory 1
+			auto matchedFilePathsDir1 = itDict_fileSize_filePath->second;
+			for (auto matchedFilePath : matchedFilePathsDir1)
+			{
+				nonUniqueFileLists[0].push_back(matchedFilePath);
+				dictionary_nonUniqueFileSize_filePath_fileSize.insert(std::make_pair(matchedFilePath, fileSize));
+			}
+
+			// Add matched files by size from directory 2
+			std::vector<std::string> matchedFilePathsDir2 = dictionaries_fileSize_filePath[1][fileSize];
 			fileSizesMatched.insert(fileSize);
 
-			for (auto matchedFilePath : matchedFilePaths)
+			for (auto matchedFilePath : matchedFilePathsDir2)
 			{
 				nonUniqueFileLists[1].push_back(matchedFilePath);
 				dictionary_nonUniqueFileSize_filePath_fileSize.insert(std::make_pair(matchedFilePath, fileSize));
