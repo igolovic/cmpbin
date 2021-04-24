@@ -2,9 +2,9 @@
 #define DEBUG
 #endif
 
-#ifndef LINUX
-#define LINUX
-#endif
+//#ifndef LINUX
+//#define LINUX
+//#endif
 
 #include <wx/panel.h>
 #include <wx/sizer.h>
@@ -72,8 +72,8 @@ void CmpbinFrame::InitializeUI()
 	CmpbinFrame::DirPickerCtrl1->SetPath("/media/user/DATA/cmp-folder-1");
 	CmpbinFrame::DirPickerCtrl2->SetPath("/media/user/DATA/cmp-folder-2");
 #else
-	CmpbinFrame::DirPickerCtrl1->SetPath("D:\\cmp-folder-1");
-	CmpbinFrame::DirPickerCtrl2->SetPath("D:\\cmp-folder-2");
+	CmpbinFrame::DirPickerCtrl1->SetPath("D:\\cmp-folder-3");
+	CmpbinFrame::DirPickerCtrl2->SetPath("D:\\cmp-folder-4");
 #endif
 
 #endif
@@ -100,12 +100,14 @@ void CmpbinFrame::InitializeUI()
 	wxBoxSizer *hboxListView = new wxBoxSizer(wxHORIZONTAL);
 
 	CmpbinFrame::ListViewCmp = new wxListView(MainPanel, wxID_ANY);
+    ListViewCmp->AppendColumn("File size");
+    ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth() * 0.1);
 	ListViewCmp->AppendColumn("File content hash");
-	ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth()*0.2);
+    ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth() * 0.1);
 	ListViewCmp->AppendColumn("1st directory file");
-	ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth()*0.4);
+    ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth() * 0.4);
 	ListViewCmp->AppendColumn("2nd directory file");
-	ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth()*0.4);
+    ListViewCmp->SetColumnWidth(3, ListViewCmp->GetSize().GetWidth() * 0.4);
 
 	hboxListView->Add(ListViewCmp, 1, wxEXPAND, 5);
 
@@ -191,17 +193,18 @@ void CmpbinFrame::WorkerThreadFinishedEvent(wxCommandEvent& event)
         int rowIndex = 0;
         for (std::vector<ListDataItem>::iterator it = pListDataItems->begin(); it != pListDataItems->end(); ++it)
         {
-            CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->FileHash);
+            CmpbinFrame::ListViewCmp->InsertItem(rowIndex, it->GetFileSizeStr());
+            CmpbinFrame::ListViewCmp->SetItem(rowIndex, 1, it->FileHash);
 
             if (it->FilesFromDirectory1.size() > 0)
             {
                 auto files = it->FilesFromDirectory1;
                 wxString filesStr;
                 for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
-                    filesStr = filesStr + *it + wxT(", ");
+                    filesStr = filesStr + wxFileName(*it).GetFullName() + wxT(", ");
 
                 filesStr.RemoveLast(2);
-                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 1, filesStr);
+                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 2, filesStr);
             }
 
             if (it->FilesFromDirectory2.size() > 0)
@@ -209,17 +212,18 @@ void CmpbinFrame::WorkerThreadFinishedEvent(wxCommandEvent& event)
                 auto files = it->FilesFromDirectory2;
                 wxString filesStr;
                 for (std::vector<std::string>::iterator it = files.begin(); it != files.end(); ++it)
-                    filesStr = filesStr + *it + wxT(", ");
+                    filesStr = filesStr + wxFileName(*it).GetFullName() + wxT(", ");
 
                 filesStr.RemoveLast(2);
-                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 2, filesStr);
+                CmpbinFrame::ListViewCmp->SetItem(rowIndex, 3, filesStr);
             }
 
             rowIndex++;
         }
-        CmpbinFrame::ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth()*0.2);
-        CmpbinFrame::ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth()*0.4);
-        CmpbinFrame::ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth()*0.4);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(0, ListViewCmp->GetSize().GetWidth() * 0.1);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(1, ListViewCmp->GetSize().GetWidth() * 0.1);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(2, ListViewCmp->GetSize().GetWidth() * 0.4);
+        CmpbinFrame::ListViewCmp->SetColumnWidth(3, ListViewCmp->GetSize().GetWidth() * 0.4);
     }
     else
     {

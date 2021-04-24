@@ -19,10 +19,10 @@ void Status(CmpbinFrame* pParent, wxCommandEvent evt, wxString message)
     wxPostEvent(pParent, evt);
 }
 
-void Finished(CmpbinFrame* pParent, wxCommandEvent evt, int, wxString textOutput, std::vector<ListDataItem> *pLlistDataItems)
+void Finished(CmpbinFrame* pParent, wxCommandEvent evt, int, wxString textOutput, std::vector<ListDataItem> *pListDataItems)
 {
     evt.SetString(textOutput);
-    evt.SetClientData(reinterpret_cast<void*>(pLlistDataItems));
+    evt.SetClientData(reinterpret_cast<void*>(pListDataItems));
     wxPostEvent(pParent, evt);
 }
 

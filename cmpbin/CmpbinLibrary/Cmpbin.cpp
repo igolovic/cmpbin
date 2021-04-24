@@ -89,7 +89,7 @@ void Compare(
 
 	// By filesize determine: unique files from directory 1, matched files
 	std::vector<std::string> nonUniqueFileLists[2];
-	std::map<std::string, unsigned long> dictionary_nonUniqueFilePath_fileSize;
+	std::map<std::string, unsigned long> dictionary_nonUniqueFileSize_filePath_fileSize;
 	for (itDict_fileSize_filePath = dictionaries_fileSize_filePath[0].begin(); itDict_fileSize_filePath != dictionaries_fileSize_filePath[0].end(); itDict_fileSize_filePath++)
 	{
 		if (isCancelled(pParent, statusEvent))
@@ -104,22 +104,13 @@ void Compare(
 		if (dictionaries_fileSize_filePath[1].find(fileSize) != dictionaries_fileSize_filePath[1].end())
 		{
 			// Matched file size
-			std::vector<std::string> matchedFiles = dictionaries_fileSize_filePath[1][fileSize];
+			std::vector<std::string> matchedFilePaths = dictionaries_fileSize_filePath[1][fileSize];
 			fileSizesMatched.insert(fileSize);
 
-			TODO
-			for (auto filePathsForSize = itDict_fileSize_filePath->second.begin(); itDict_fileSize_filePath->second)
+			for (auto matchedFilePath : matchedFilePaths)
 			{
-                std::string anyFilePath = *filePathsForSize;
-				nonUniqueFileLists[0].push_back(anyFilePath);
-				dictionary_nonUniqueFilePath_fileSize[0].insert(std::make_pair(anyFilePath, fileSize));
-            }
-
-			for (auto filePathsForSize : matchedFiles)
-			{
-                std::string anyFilePath = filePathsForSize.front();
-				nonUniqueFileLists[1].push_back(anyFilePath );
-				dictionary_nonUniqueFilePath_fileSize[1].insert(std::make_pair(anyFilePath, fileSize));
+				nonUniqueFileLists[1].push_back(matchedFilePath);
+				dictionary_nonUniqueFileSize_filePath_fileSize.insert(std::make_pair(matchedFilePath, fileSize));
 			}
 		}
 		else
@@ -228,8 +219,8 @@ void Compare(
 
 		ListDataItem listDataItem = ListDataItem();
 		std::string filePath = itDict_fileHash_fileName->second.front();
-		if (dictionary_nonUniqueFilePath_fileSize.find(filePath) != dictionary_nonUniqueFilePath_fileSize.end())
-            listDataItem.FileSize = dictionary_nonUniqueFilePath_fileSize[filePath];
+		if (dictionary_nonUniqueFileSize_filePath_fileSize.find(filePath) != dictionary_nonUniqueFileSize_filePath_fileSize.end())
+            listDataItem.FileSize = dictionary_nonUniqueFileSize_filePath_fileSize[filePath];
 
 		std::string fileHash = itDict_fileHash_fileName->first;
 		listDataItem.FileHash = fileHash;
@@ -265,6 +256,14 @@ void Compare(
 		if (fileHashesMatched.find(itDict_fileHash_fileName->first) == fileHashesMatched.end())
 		{
 			ListDataItem listDataItem = ListDataItem();
+
+			for (auto fileName : itDict_fileHash_fileName->second)
+				if (dictionary_nonUniqueFileSize_filePath_fileSize.find(fileName) != dictionary_nonUniqueFileSize_filePath_fileSize.end())
+				{
+					listDataItem.FileSize = dictionary_nonUniqueFileSize_filePath_fileSize[fileName];
+					break;
+				}
+
 			listDataItem.FileHash = itDict_fileHash_fileName->first;
 			listDataItem.FilesFromDirectory2 = itDict_fileHash_fileName->second;
 
@@ -296,7 +295,7 @@ void Compare(
 	}
 
 	// Build CSV textual description
-	textOutput.Append("Size (bytes);File hash;Directory 1 files;Directory 2 files\n");
+	textOutput.Append("File size;File hash;Directory 1 files;Directory 2 files\n");
 	for (auto listDataItem : *pListDataItems)
 	{
         if (isCancelled(pParent, statusEvent))
@@ -305,17 +304,17 @@ void Compare(
             return;
         }
 
-		textOutput.Append(wxString::Format(wxT("%lu,"), listDataItem.FileSize));
+		textOutput.Append(wxString::Format(wxT("%lu;"), listDataItem.FileSize));
 
-		textOutput.Append(wxString::Format(wxT("%s,"), listDataItem.FileHash));
+		textOutput.Append(wxString::Format(wxT("%s;"), listDataItem.FileHash));
 
 		for (size_t i = 0; i < listDataItem.FilesFromDirectory1.size(); i++)
-			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory1[i]).GetShortPath()));
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory1[i]).GetFullName()));
 
-		textOutput.Append(",");
+		textOutput.Append(";");
 
 		for (size_t i = 0; i < listDataItem.FilesFromDirectory2.size(); i++)
-			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory2[i]).GetShortPath()));
+			textOutput.Append(wxString::Format(wxT(" \"%s\""), wxFileName(listDataItem.FilesFromDirectory2[i]).GetFullName()));
 
 		textOutput.Append("\n");
 	}
