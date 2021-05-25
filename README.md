@@ -72,7 +72,7 @@ LICENSE
 This article, along with any associated source code and files, is licensed under GPL v3 License.
 
 Screenshot while running on Debian:
-- haven't made it yet :)
+![screenshot](./screenshot-debian.png?raw=true)
 
 Screenshot while running on Windows 10:
 ![screenshot](./screenshot.png?raw=true)
