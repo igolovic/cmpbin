@@ -1,3 +1,9 @@
+Screenshot while running on Debian:   
+![screenshot](./screenshot-debian.png?raw=true)   
+    
+Screenshot while running on Windows 10:    
+![screenshot](./screenshot.png?raw=true)    
+   
 # cmpbin
 CMPBIN - CROSS-PLATFORM GUI DESKTOP APPLICATION WHICH COMPARES FILES IN TWO FOLDERS BY FILE SIZE AND BINARY CONTENT AND FINDS MATCHES AND UNIQUE FILES   
    
@@ -58,13 +64,6 @@ User selects directories "directory 1" and "directory 2". Comparison is started 
 -	3.0.0.0 - 2021-03-31 - First fully functional version in both supported operating systems (Linux Debian and Windows)
 -	4.0.0.0 - processing moved to separate "worker" thread, pre-comparison using file sizes added
 -	4.0.1.0 - various improvements and bug fixes of previous version
-   
-Screenshot while running on Debian:   
-![screenshot](./screenshot-debian.png?raw=true)   
-    
-Screenshot while running on Windows 10:    
-![screenshot](./screenshot.png?raw=true)    
-
-   
+     
 ## LICENSE
 This article, along with any associated source code and files, is licensed under GPL v3 License.
